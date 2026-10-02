@@ -1,0 +1,40 @@
+{
+  "name": "sap-presales-demos-repo",
+  "version": "1.0.0",
+  "description": "SAP Analytics Presales Demo Repository",
+  "scripts": {
+    "start": "cds-serve",
+    "watch": "cds watch",
+    "build:cf": "mbt build -t gen --mtar mta.tar",
+    "deploy:cf": "cf deploy gen/mta.tar"
+  },
+  "dependencies": {
+    "@sap/cds": "^8",
+    "@sap/xssec": "^3",
+    "express": "^4",
+    "passport": "^0"
+  },
+  "devDependencies": {
+    "@cap-js/sqlite": "^1",
+    "@sap/cds-dk": "^8"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "sqlite",
+        "[production]": {
+          "kind": "hana"
+        }
+      },
+      "auth": {
+        "kind": "dummy",
+        "[production]": {
+          "kind": "xsuaa"
+        }
+      }
+    },
+    "features": {
+      "fetch_csrf": true
+    }
+  }
+}

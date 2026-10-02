@@ -1,0 +1,11 @@
+{
+  "name": "sap-presales-demos-approuter",
+  "version": "1.0.0",
+  "description": "App Router for SAP Presales Demo Repository",
+  "scripts": {
+    "start": "node node_modules/@sap/approuter/approuter.js"
+  },
+  "dependencies": {
+    "@sap/approuter": "^16"
+  }
+}

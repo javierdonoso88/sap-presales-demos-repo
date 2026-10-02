@@ -1,0 +1,9 @@
+node_modules/
+gen/
+*.db
+*.sqlite
+.env
+mta_archives/
+dist/
+.DS_Store
+approuter/node_modules/

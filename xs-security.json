@@ -1,0 +1,49 @@
+{
+  "xsappname": "sap-presales-demos-repo",
+  "tenant-mode": "dedicated",
+  "description": "SAP Analytics Presales Demo Repository",
+  "scopes": [
+    {
+      "name": "$XSAPPNAME.DemoAdmin",
+      "description": "Administrar datos maestros (tenants, soluciones, clientes, objetos)"
+    },
+    {
+      "name": "$XSAPPNAME.DemoUser",
+      "description": "Crear y editar demos"
+    },
+    {
+      "name": "$XSAPPNAME.DemoViewer",
+      "description": "Ver demos (solo lectura)"
+    }
+  ],
+  "attributes": [],
+  "role-templates": [
+    {
+      "name": "DemoAdmin",
+      "description": "Administrador del repositorio - acceso completo",
+      "scope-references": [
+        "$XSAPPNAME.DemoAdmin",
+        "$XSAPPNAME.DemoUser",
+        "$XSAPPNAME.DemoViewer"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "DemoUser",
+      "description": "Usuario del equipo de preventa - crear y editar demos",
+      "scope-references": [
+        "$XSAPPNAME.DemoUser",
+        "$XSAPPNAME.DemoViewer"
+      ],
+      "attribute-references": []
+    },
+    {
+      "name": "DemoViewer",
+      "description": "Viewer - solo consulta del repositorio",
+      "scope-references": [
+        "$XSAPPNAME.DemoViewer"
+      ],
+      "attribute-references": []
+    }
+  ]
+}

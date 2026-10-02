@@ -1,0 +1,103 @@
+{
+  "_version": "1.49.0",
+  "sap.app": {
+    "id": "sap.presales.demos",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": { "version": "1.0.0" },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "dataSources": {
+      "mainService": {
+        "uri": "/demo/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "odataVersion": "4.0"
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "technology": "UI5",
+    "icons": { "icon": "" },
+    "fullWidth": false
+  },
+  "sap.ui5": {
+    "flexEnabled": true,
+    "dependencies": {
+      "minUI5Version": "1.120.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {},
+        "sap.ushell": {},
+        "sap.fe.templates": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {
+          "synchronizationMode": "None",
+          "operationMode": "Server",
+          "autoExpandSelect": true,
+          "earlyRequests": true
+        }
+      },
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": { "bundleName": "sap.presales.demos.i18n.i18n" }
+      }
+    },
+    "routing": {
+      "routes": [
+        {
+          "pattern": ":?query:",
+          "name": "DemosList",
+          "target": "DemosList"
+        },
+        {
+          "pattern": "Demos({key}):?query:",
+          "name": "DemosObjectPage",
+          "target": "DemosObjectPage"
+        }
+      ],
+      "targets": {
+        "DemosList": {
+          "type": "Component",
+          "id": "DemosList",
+          "name": "sap.fe.templates.ListReport",
+          "options": {
+            "settings": {
+              "entitySet": "Demos",
+              "variantManagement": "Page",
+              "showClearButton": true,
+              "initialLoad": "Auto",
+              "navigation": {
+                "Demos": {
+                  "detail": { "route": "DemosObjectPage" }
+                }
+              }
+            }
+          }
+        },
+        "DemosObjectPage": {
+          "type": "Component",
+          "id": "DemosObjectPage",
+          "name": "sap.fe.templates.ObjectPage",
+          "options": {
+            "settings": {
+              "entitySet": "Demos",
+              "editableHeaderContent": false
+            }
+          }
+        }
+      }
+    }
+  }
+}
