@@ -9,7 +9,9 @@ build-parameters:
       commands:
         - npm ci
         - npx cds build --production
-        - cp -r app gen/srv/app
+        - mkdir -p gen/srv/app/presales-demos gen/srv/app/admin-data
+        - cp -r app/presales-demos/webapp gen/srv/app/presales-demos/webapp
+        - cp -r app/admin-data/webapp gen/srv/app/admin-data/webapp
 
 modules:
 
