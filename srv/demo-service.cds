@@ -1,17 +1,12 @@
 using { sap.presales.demos as db } from '../db/schema';
 
 /**
- * Servicio principal: acceso a demos y datos maestros para consulta.
- * Todos los usuarios autenticados pueden leer; DemoUser y DemoAdmin pueden escribir.
+ * Servicio principal: cualquier usuario autenticado puede leer y escribir demos.
  */
 service DemoService @(path: '/demo') @(requires: 'authenticated-user') {
 
     // Demos con draft habilitado (guardar como borrador antes de publicar)
     @odata.draft.enabled
-    @(restrict: [
-        { grant: 'READ' },
-        { grant: ['WRITE', 'CREATE', 'UPDATE', 'DELETE'], to: ['DemoUser', 'DemoAdmin'] }
-    ])
     entity Demos as projection on db.Demos;
 
     // Datos maestros (solo lectura en este servicio; se gestionan desde AdminService)
