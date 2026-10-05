@@ -70,7 +70,7 @@ annotate DemoService.Demos with @(
 
 // ─── DemoTenants: subsección en Object Page ───────────────────────────────────
 
-annotate DemoService.Demos:tenants with @(
+annotate DemoService.DemoTenants with @(
     UI.LineItem: [
         { Value: tenant.name, Label: 'Sistema' },
         { Value: tenant.type, Label: 'Tipo'    },
@@ -79,7 +79,7 @@ annotate DemoService.Demos:tenants with @(
     ]
 );
 
-annotate DemoService.Demos:tenants with {
+annotate DemoService.DemoTenants with {
     tenant @(
         Common.Text           : tenant.name,
         Common.TextArrangement: #TextOnly,
@@ -96,7 +96,7 @@ annotate DemoService.Demos:tenants with {
 
 // ─── DemoSolutions: subsección en Object Page ────────────────────────────────
 
-annotate DemoService.Demos:solutions with @(
+annotate DemoService.DemoSolutions with @(
     UI.LineItem: [
         { Value: solution.name, Label: 'Solución' },
         { Value: solution.area, Label: 'Área'     },
@@ -104,7 +104,7 @@ annotate DemoService.Demos:solutions with @(
     ]
 );
 
-annotate DemoService.Demos:solutions with {
+annotate DemoService.DemoSolutions with {
     solution @(
         Common.Text           : solution.name,
         Common.TextArrangement: #TextOnly,
@@ -121,7 +121,7 @@ annotate DemoService.Demos:solutions with {
 
 // ─── DemoObjects: subsección en Object Page ──────────────────────────────────
 
-annotate DemoService.Demos:objects with @(
+annotate DemoService.DemoObjects with @(
     UI.LineItem: [
         { Value: object.name,          Label: 'Objeto'    },
         { Value: object.objectType,    Label: 'Tipo'      },
@@ -131,7 +131,7 @@ annotate DemoService.Demos:objects with @(
     ]
 );
 
-annotate DemoService.Demos:objects with {
+annotate DemoService.DemoObjects with {
     object @(
         Common.Text           : object.name,
         Common.TextArrangement: #TextOnly,
@@ -149,7 +149,7 @@ annotate DemoService.Demos:objects with {
 
 // ─── DemoClients: subsección en Object Page ──────────────────────────────────
 
-annotate DemoService.Demos:clients with @(
+annotate DemoService.DemoClients with @(
     UI.LineItem: [
         { Value: client.name,        Label: 'Cliente'          },
         { Value: client.industry,    Label: 'Sector'           },
@@ -159,7 +159,7 @@ annotate DemoService.Demos:clients with @(
     ]
 );
 
-annotate DemoService.Demos:clients with {
+annotate DemoService.DemoClients with {
     client @(
         Common.Text           : client.name,
         Common.TextArrangement: #TextOnly,
