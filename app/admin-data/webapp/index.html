@@ -11,18 +11,22 @@
         data-sap-ui-compatVersion="edge"
         data-sap-ui-async="true"
         data-sap-ui-frameOptions="allow"
-        data-sap-ui-preload="async"
     ></script>
     <script>
-        sap.ui.getCore().attachInit(function () {
-            sap.ui.require(["sap/m/Shell", "sap/ui/core/ComponentContainer"], function (Shell, ComponentContainer) {
-                new Shell({
-                    app: new ComponentContainer({
-                        height: "100%",
-                        name: "sap.presales.admin",
-                        settings: { id: "sap.presales.admin" }
-                    })
-                }).placeAt("content");
+        sap.ui.require(["sap/ui/core/Core"], function (Core) {
+            Core.ready().then(function () {
+                sap.ui.require(
+                    ["sap/m/Shell", "sap/ui/core/ComponentContainer"],
+                    function (Shell, ComponentContainer) {
+                        new Shell({
+                            app: new ComponentContainer({
+                                height : "100%",
+                                name   : "sap.presales.admin",
+                                settings: { id: "sap.presales.admin" }
+                            })
+                        }).placeAt("content");
+                    }
+                );
             });
         });
     </script>
