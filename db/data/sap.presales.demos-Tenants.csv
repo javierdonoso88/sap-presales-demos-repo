@@ -1,0 +1,6 @@
+ID,name,type,url,description,active,createdAt,createdBy,modifiedAt,modifiedBy
+11111111-1111-1111-1111-000000000001,SAC Activate,SAC,https://sac-activate.eu10.hcs.cloud.sap,Tenant SAC de demostración estándar con contenido preinstalado,true,2026-01-10T09:00:00Z,admin,2026-01-10T09:00:00Z,admin
+11111111-1111-1111-1111-000000000002,SAC Trial EMEA,SAC,https://sac-trial-emea.eu10.hcs.cloud.sap,Tenant SAC Trial para demos rápidas sin preparación previa,true,2026-01-10T09:00:00Z,admin,2026-01-10T09:00:00Z,admin
+11111111-1111-1111-1111-000000000003,Datasphere Demo EU,DATASPHERE,https://datasphere-demo-eu.eu10.hcs.cloud.sap,Tenant Datasphere con modelos analíticos precargados,true,2026-01-10T09:00:00Z,admin,2026-01-10T09:00:00Z,admin
+11111111-1111-1111-1111-000000000004,BDC Sandbox,BDC,https://bdc-sandbox.eu10.hcs.cloud.sap,Entorno sandbox de SAP Business Data Cloud para PoCs,true,2026-01-10T09:00:00Z,admin,2026-01-10T09:00:00Z,admin
+11111111-1111-1111-1111-000000000005,S/4HANA Embedded,S4HANA,https://s4hana-demo.eu10.hcs.cloud.sap,Sistema S/4HANA con embedded analytics activado,false,2026-03-15T10:00:00Z,admin,2026-03-15T10:00:00Z,admin

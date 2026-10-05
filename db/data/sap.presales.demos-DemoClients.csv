@@ -1,0 +1,4 @@
+demo_ID,client_ID,presentationDate,result,feedback
+55555555-5555-5555-5555-000000000001,33333333-3333-3333-3333-000000000001,2026-09-15,VERY_INTERESTED,Excelente recepción por parte del equipo de FP&A. Muy interesados en una PoC de planificación de ventas con datos reales de S/4HANA. Solicitaron propuesta en 2 semanas.
+55555555-5555-5555-5555-000000000002,33333333-3333-3333-3333-000000000002,2026-10-01,INTERESTED,El equipo de Data Architecture quedó impresionado con la capa semántica de Datasphere. Interés en evaluar como sustituto de BW en su roadmap 2027.
+55555555-5555-5555-5555-000000000004,33333333-3333-3333-3333-000000000004,2026-06-10,NEUTRAL,Demo bien recibida pero el proyecto quedó en pausa por cambio de prioridades internas en BBVA. Retomar contacto en Q1 2027.

@@ -1,0 +1,6 @@
+ID,name,industry,country,contact,email,createdAt,createdBy,modifiedAt,modifiedBy
+33333333-3333-3333-3333-000000000001,Telefónica,Telecomunicaciones,ESP,María García López,mgarcia@telefonica.com,2026-02-01T09:00:00Z,admin,2026-02-01T09:00:00Z,admin
+33333333-3333-3333-3333-000000000002,Iberdrola,Energía,ESP,Carlos Martínez Ruiz,cmartinez@iberdrola.com,2026-03-01T09:00:00Z,admin,2026-03-01T09:00:00Z,admin
+33333333-3333-3333-3333-000000000003,Repsol,Petróleo y Gas,ESP,Ana Fernández Torres,afernandez@repsol.com,2026-04-01T09:00:00Z,admin,2026-04-01T09:00:00Z,admin
+33333333-3333-3333-3333-000000000004,BBVA,Banca,ESP,Pedro Sánchez Díaz,psanchez@bbva.com,2026-04-15T09:00:00Z,admin,2026-04-15T09:00:00Z,admin
+33333333-3333-3333-3333-000000000005,Inditex,Retail,ESP,Laura González Vega,lgonzalez@inditex.com,2026-06-01T09:00:00Z,admin,2026-06-01T09:00:00Z,admin
