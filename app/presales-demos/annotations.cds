@@ -14,7 +14,7 @@ annotate DemoService.Demos with @(
     UI.LineItem: [
         { Value: title,     Label: 'Título' },
         { Value: demoDate,  Label: 'Fecha' },
-        { Value: status,    Label: 'Estado',      Criticality: statusCriticality },
+        { Value: status,    Label: 'Estado' },
         { Value: createdBy, Label: 'Creado por' }
     ]
 );
@@ -67,11 +67,6 @@ annotate DemoService.Demos with @(
         }
     ]
 );
-
-// Status criticality for color coding
-extend DemoService.Demos with {
-    virtual statusCriticality : Integer;
-}
 
 // ─── DemoTenants: subsección en Object Page ───────────────────────────────────
 

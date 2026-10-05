@@ -1,7 +1,7 @@
 {
   "_version": "1.49.0",
   "sap.app": {
-    "id": "sap.presales.demos",
+    "id": "PresalesDemos",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "applicationVersion": { "version": "1.0.0" },
@@ -30,7 +30,6 @@
       "libs": {
         "sap.m": {},
         "sap.ui.core": {},
-        "sap.ushell": {},
         "sap.fe.templates": {}
       }
     },
@@ -51,7 +50,7 @@
       },
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
-        "settings": { "bundleName": "sap.presales.demos.i18n.i18n" }
+        "settings": { "bundleName": "PresalesDemos.i18n.i18n" }
       }
     },
     "routing": {
@@ -76,7 +75,6 @@
             "settings": {
               "entitySet": "Demos",
               "variantManagement": "Page",
-              "showClearButton": true,
               "initialLoad": "Auto",
               "navigation": {
                 "Demos": {

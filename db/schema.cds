@@ -81,10 +81,10 @@ entity ComponentObjects : cuid, managed {
 
 /** Demo – entidad central del repositorio */
 entity Demos : cuid, managed {
-    title       : String(200) @mandatory;
-    description : String(3000);
-    demoDate    : Date;
-    status      : DemoStatus default 'DRAFT';
+    title       : String(200) @mandatory @title: 'Título';
+    description : String(3000)            @title: 'Descripción';
+    demoDate    : Date                    @title: 'Fecha demo';
+    status      : DemoStatus default 'DRAFT' @title: 'Estado';
     tenants     : Composition of many DemoTenants   on tenants.demo   = $self;
     solutions   : Composition of many DemoSolutions on solutions.demo = $self;
     objects     : Composition of many DemoObjects   on objects.demo   = $self;

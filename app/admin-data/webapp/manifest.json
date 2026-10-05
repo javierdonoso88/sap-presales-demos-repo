@@ -1,7 +1,7 @@
 {
   "_version": "1.49.0",
   "sap.app": {
-    "id": "sap.presales.admin",
+    "id": "PresalesAdmin",
     "type": "application",
     "i18n": "i18n/i18n.properties",
     "applicationVersion": { "version": "1.0.0" },
@@ -26,7 +26,6 @@
       "libs": {
         "sap.m": {},
         "sap.ui.core": {},
-        "sap.ushell": {},
         "sap.fe.templates": {}
       }
     },
@@ -44,7 +43,7 @@
       },
       "i18n": {
         "type": "sap.ui.model.resource.ResourceModel",
-        "settings": { "bundleName": "sap.presales.admin.i18n.i18n" }
+        "settings": { "bundleName": "PresalesAdmin.i18n.i18n" }
       }
     },
     "routing": {
