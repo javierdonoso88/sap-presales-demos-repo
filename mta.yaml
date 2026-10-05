@@ -12,7 +12,7 @@ build-parameters:
 
 modules:
 
-  # ── CAP Service ──────────────────────────────────────────────────────────────
+  # ── CAP Service (ruta interna apps.internal, no consume cuota externa) ────────
   - name: sap-presales-demos-srv
     type: nodejs
     path: gen/srv
@@ -20,26 +20,29 @@ modules:
       buildpack: nodejs_buildpack
       memory: 256M
       disk-quota: 512M
+      routes:
+        - route: sap-presales-demos-srv.apps.internal
     build-parameters:
       builder: npm-ci
     provides:
       - name: srv-api
         properties:
-          srv-url: ${default-url}
+          srv-url: "http://sap-presales-demos-srv.apps.internal:8080"
     requires:
       - name: sap-presales-demos-auth
-      - name: sap-presales-demos-db   # requiere HANA Cloud - descomentar cuando esté disponible
+      - name: sap-presales-demos-db
 
-  # ── HANA DB Deployer (requiere instancia HANA Cloud) ─────────────────────────
+  # ── HANA DB Deployer ──────────────────────────────────────────────────────────
   - name: sap-presales-demos-db-deployer
     type: hdb
     path: gen/db
     parameters:
       buildpack: nodejs_buildpack
+      no-route: true
     requires:
       - name: sap-presales-demos-db
 
-  # ── App Router (autenticación XSUAA) ─────────────────────────────────────────
+  # ── App Router (única ruta pública) ───────────────────────────────────────────
   - name: sap-presales-demos-approuter
     type: approuter.nodejs
     path: approuter
@@ -68,12 +71,8 @@ resources:
         xsappname: sap-presales-demos-repo-${org}-${space}
         tenant-mode: dedicated
 
-  # ── HANA Cloud HDI Container ─────────────────────────────────────────────────
-  # NOTA: crear la instancia de HANA Cloud y este servicio antes de desplegar
+  # ── HANA Cloud HDI Container (instancia existente) ───────────────────────────
   - name: sap-presales-demos-db
-    type: com.sap.xs.hdi-container
+    type: org.cloudfoundry.existing-service
     parameters:
-      service: hana
-      service-plan: hdi-shared
-    properties:
-      hdi-service-name: ${service-name}
+      service-name: sap-presales-demos-repo
