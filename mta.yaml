@@ -12,7 +12,7 @@ build-parameters:
 
 modules:
 
-  # ── CAP Service (ruta interna apps.internal, no consume cuota externa) ────────
+  # ── CAP Service ──────────────────────────────────────────────────────────────
   - name: sap-presales-demos-srv
     type: nodejs
     path: gen/srv
@@ -20,14 +20,12 @@ modules:
       buildpack: nodejs_buildpack
       memory: 256M
       disk-quota: 512M
-      routes:
-        - route: sap-presales-demos-srv.apps.internal
     build-parameters:
       builder: npm-ci
     provides:
       - name: srv-api
         properties:
-          srv-url: "http://sap-presales-demos-srv.apps.internal:8080"
+          srv-url: ${default-url}
     requires:
       - name: sap-presales-demos-auth
       - name: sap-presales-demos-db
@@ -39,10 +37,12 @@ modules:
     parameters:
       buildpack: nodejs_buildpack
       no-route: true
+      memory: 128M
+      disk-quota: 256M
     requires:
       - name: sap-presales-demos-db
 
-  # ── App Router (única ruta pública) ───────────────────────────────────────────
+  # ── App Router ────────────────────────────────────────────────────────────────
   - name: sap-presales-demos-approuter
     type: approuter.nodejs
     path: approuter
