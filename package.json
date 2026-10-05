@@ -9,6 +9,7 @@
     "deploy:cf": "cf deploy gen/mta.tar"
   },
   "dependencies": {
+    "@cap-js/hana": "^1",
     "@sap/cds": "^8",
     "@sap/xssec": "^3",
     "express": "^4",
