@@ -355,8 +355,12 @@ export default function MasterData() {
             })}
           </div>
 
-          {activeTab === 'systems' && <SystemsTab onCount={setCount('systems')} />}
-          {activeTab === 'clients' && <ClientsTab onCount={setCount('clients')} />}
+          <div className={activeTab !== 'systems' ? 'hidden' : ''}>
+            <SystemsTab onCount={setCount('systems')} />
+          </div>
+          <div className={activeTab !== 'clients' ? 'hidden' : ''}>
+            <ClientsTab onCount={setCount('clients')} />
+          </div>
         </div>
       </div>
     </div>
