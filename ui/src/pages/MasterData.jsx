@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import api from '../api/client'
-import PageHeader from '../components/shared/PageHeader'
 import Spinner from '../components/shared/Spinner'
+import { Building2, Lightbulb, Users, Package, Plus, Server } from 'lucide-react'
 
 // ─── Generic CRUD Tab ─────────────────────────────────────────────────────────
-function CrudTab({ resource, columns, emptyForm, renderForm }) {
+function CrudTab({ resource, columns, emptyForm, renderForm, onCountChange }) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
@@ -16,7 +16,11 @@ function CrudTab({ resource, columns, emptyForm, renderForm }) {
   const load = () => {
     setLoading(true)
     api.get(`/${resource}`)
-      .then(res => setItems(res.data || []))
+      .then(res => {
+        const data = res.data || []
+        setItems(data)
+        onCountChange?.(data.length)
+      })
       .catch(err => setError(err.error || 'Failed to load'))
       .finally(() => setLoading(false))
   }
@@ -69,27 +73,27 @@ function CrudTab({ resource, columns, emptyForm, renderForm }) {
   return (
     <div>
       {error && (
-        <div className="mx-4 mt-4 bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
+        <div className="mx-5 mt-4 bg-red-50 border border-red-200 rounded-xl p-3 text-red-700 text-sm">
           {error}
         </div>
       )}
 
       {/* Add/Edit Form */}
       {showAdd && (
-        <div className="m-4 p-4 border-2 border-sap-blue rounded-lg bg-sap-blue-light">
-          <h3 className="text-sm font-semibold mb-3">{editId ? 'Edit' : 'Add New'}</h3>
+        <div className="m-5 p-5 border-2 border-blue-100 rounded-2xl bg-blue-50/50">
+          <h3 className="text-sm font-bold text-gray-800 mb-4">{editId ? 'Edit record' : 'Add new record'}</h3>
           {renderForm(form, setForm)}
-          <div className="flex gap-2 mt-3">
+          <div className="flex gap-2 mt-4">
             <button
               onClick={handleSave}
               disabled={saving}
-              className="px-3 py-1.5 text-sm rounded bg-sap-blue text-white hover:bg-sap-blue-dark disabled:opacity-50"
+              className="px-4 py-2 text-sm font-semibold rounded-xl bg-sap-blue text-white hover:bg-sap-blue-dark disabled:opacity-50 transition-colors"
             >
-              {saving ? 'Saving...' : 'Save'}
+              {saving ? 'Saving…' : 'Save'}
             </button>
             <button
               onClick={handleCancel}
-              className="px-3 py-1.5 text-sm rounded border border-gray-300 bg-white hover:bg-gray-50"
+              className="px-4 py-2 text-sm font-semibold rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 transition-colors"
             >
               Cancel
             </button>
@@ -102,20 +106,20 @@ function CrudTab({ resource, columns, emptyForm, renderForm }) {
         <div className="flex justify-center p-8"><Spinner /></div>
       ) : (
         <table className="w-full">
-          <thead className="bg-gray-50 border-b">
-            <tr>
+          <thead>
+            <tr className="border-b-2 border-gray-50">
               {columns.map(col => (
-                <th key={col.key} className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                <th key={col.key} className="px-5 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">
                   {col.label}
                 </th>
               ))}
-              <th className="px-4 py-3 text-right">
+              <th className="px-5 py-3 text-right">
                 {!showAdd && (
                   <button
                     onClick={() => { setForm(emptyForm); setShowAdd(true); setEditId(null) }}
-                    className="px-3 py-1 text-xs rounded bg-sap-blue text-white hover:bg-sap-blue-dark"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-sap-blue text-white hover:bg-sap-blue-dark transition-colors"
                   >
-                    + Add
+                    <Plus size={11} /> Add
                   </button>
                 )}
               </th>
@@ -123,21 +127,21 @@ function CrudTab({ resource, columns, emptyForm, renderForm }) {
           </thead>
           <tbody>
             {items.map(item => (
-              <tr key={item.ID} className="border-b hover:bg-gray-50">
+              <tr key={item.ID} className="group border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
                 {columns.map(col => (
-                  <td key={col.key} className="px-4 py-3 text-sm text-gray-700">
+                  <td key={col.key} className="px-5 py-3.5 text-sm text-gray-700">
                     {col.render ? col.render(item[col.key]) : (item[col.key] ?? '—')}
                   </td>
                 ))}
-                <td className="px-4 py-3 text-right">
-                  <button onClick={() => handleEdit(item)} className="text-xs text-sap-blue hover:underline mr-3">Edit</button>
-                  <button onClick={() => handleDelete(item.ID)} className="text-xs text-red-600 hover:underline">Delete</button>
+                <td className="px-5 py-3.5 text-right">
+                  <button onClick={() => handleEdit(item)} className="text-xs font-semibold text-sap-blue hover:underline mr-4">Edit</button>
+                  <button onClick={() => handleDelete(item.ID)} className="text-xs font-semibold text-red-500 hover:underline">Delete</button>
                 </td>
               </tr>
             ))}
             {items.length === 0 && (
               <tr>
-                <td colSpan={columns.length + 1} className="px-4 py-8 text-center text-gray-400">
+                <td colSpan={columns.length + 1} className="px-5 py-10 text-center text-sm text-gray-400">
                   No items yet. Click "+ Add" to create one.
                 </td>
               </tr>
@@ -149,19 +153,20 @@ function CrudTab({ resource, columns, emptyForm, renderForm }) {
   )
 }
 
-const inputCls = 'w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-sap-blue'
-const labelCls = 'block text-xs font-medium text-gray-600 mb-1'
+const inputCls = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sap-blue focus:border-transparent'
+const labelCls = 'block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide'
 
 // ─── Tenants Tab ──────────────────────────────────────────────────────────────
-function TenantsTab() {
+function TenantsTab({ onCount }) {
   return (
     <CrudTab
       resource="tenants"
+      onCountChange={onCount}
       columns={[
         { key: 'NAME', label: 'Name', field: 'name' },
         { key: 'TYPE', label: 'Type', field: 'type' },
-        { key: 'URL', label: 'URL', field: 'url' },
-        { key: 'ACTIVE', label: 'Active', field: 'active', render: v => v ? '✓' : '✗' },
+        { key: 'URL', label: 'URL', field: 'url', render: v => v ? <a href={v} target="_blank" rel="noreferrer" className="text-sap-blue hover:underline text-xs font-mono truncate max-w-xs inline-block">{v}</a> : '—' },
+        { key: 'ACTIVE', label: 'Active', field: 'active', render: v => v ? <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Active</span> : <span className="text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Inactive</span> },
       ]}
       emptyForm={{ name: '', type: '', url: '', description: '', active: true }}
       renderForm={(form, setForm) => (
@@ -172,19 +177,19 @@ function TenantsTab() {
           </div>
           <div>
             <label className={labelCls}>Type</label>
-            <input className={inputCls} value={form.type} placeholder="e.g. SAC, Datasphere..." onChange={e => setForm(f => ({ ...f, type: e.target.value }))} />
+            <input className={inputCls} value={form.type} placeholder="e.g. SAC, DATASPHERE, BDC…" onChange={e => setForm(f => ({ ...f, type: e.target.value }))} />
           </div>
           <div>
             <label className={labelCls}>URL</label>
-            <input className={inputCls} value={form.url} placeholder="https://..." onChange={e => setForm(f => ({ ...f, url: e.target.value }))} />
+            <input className={inputCls} value={form.url} placeholder="https://…" onChange={e => setForm(f => ({ ...f, url: e.target.value }))} />
           </div>
           <div>
             <label className={labelCls}>Description</label>
             <input className={inputCls} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
           </div>
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="activeCheck" checked={form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} />
-            <label htmlFor="activeCheck" className="text-sm text-gray-700">Active</label>
+          <div className="flex items-center gap-2 pt-1">
+            <input type="checkbox" id="activeCheck" checked={form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} className="rounded" />
+            <label htmlFor="activeCheck" className="text-sm font-medium text-gray-700">Active</label>
           </div>
         </div>
       )}
@@ -193,10 +198,11 @@ function TenantsTab() {
 }
 
 // ─── Solutions Tab ────────────────────────────────────────────────────────────
-function SolutionsTab() {
+function SolutionsTab({ onCount }) {
   return (
     <CrudTab
       resource="solutions"
+      onCountChange={onCount}
       columns={[
         { key: 'NAME', label: 'Name', field: 'name' },
         { key: 'AREA', label: 'Area', field: 'area' },
@@ -211,7 +217,7 @@ function SolutionsTab() {
           </div>
           <div>
             <label className={labelCls}>Area</label>
-            <input className={inputCls} value={form.area} placeholder="e.g. Analytics, Planning..." onChange={e => setForm(f => ({ ...f, area: e.target.value }))} />
+            <input className={inputCls} value={form.area} placeholder="e.g. Analytics, Planning…" onChange={e => setForm(f => ({ ...f, area: e.target.value }))} />
           </div>
           <div className="col-span-2">
             <label className={labelCls}>Description</label>
@@ -224,10 +230,11 @@ function SolutionsTab() {
 }
 
 // ─── Clients Tab ──────────────────────────────────────────────────────────────
-function ClientsTab() {
+function ClientsTab({ onCount }) {
   return (
     <CrudTab
       resource="clients"
+      onCountChange={onCount}
       columns={[
         { key: 'NAME', label: 'Name', field: 'name' },
         { key: 'INDUSTRY', label: 'Industry', field: 'industry' },
@@ -264,7 +271,7 @@ function ClientsTab() {
 }
 
 // ─── Objects Tab ──────────────────────────────────────────────────────────────
-function ObjectsTab() {
+function ObjectsTab({ onCount }) {
   const [tenants, setTenants] = useState([])
   const [solutions, setSolutions] = useState([])
 
@@ -276,12 +283,13 @@ function ObjectsTab() {
   return (
     <CrudTab
       resource="objects"
+      onCountChange={onCount}
       columns={[
         { key: 'NAME', label: 'Name', field: 'name' },
         { key: 'OBJECTTYPE', label: 'Type', field: 'objectType' },
         { key: 'TENANT_NAME', label: 'Tenant', field: 'tenant_id', editKey: 'TENANT_ID' },
         { key: 'SOLUTION_NAME', label: 'Solution', field: 'solution_id', editKey: 'SOLUTION_ID' },
-        { key: 'ACTIVE', label: 'Active', field: 'active', render: v => v ? '✓' : '✗' },
+        { key: 'ACTIVE', label: 'Active', field: 'active', render: v => v ? <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Active</span> : <span className="text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Inactive</span> },
       ]}
       emptyForm={{ name: '', objectType: '', tenant_id: '', solution_id: '', path: '', description: '', active: true }}
       renderForm={(form, setForm) => (
@@ -292,7 +300,7 @@ function ObjectsTab() {
           </div>
           <div>
             <label className={labelCls}>Type</label>
-            <input className={inputCls} value={form.objectType} placeholder="e.g. Story, Model..." onChange={e => setForm(f => ({ ...f, objectType: e.target.value }))} />
+            <input className={inputCls} value={form.objectType} placeholder="e.g. Story, Model…" onChange={e => setForm(f => ({ ...f, objectType: e.target.value }))} />
           </div>
           <div>
             <label className={labelCls}>Tenant</label>
@@ -312,9 +320,9 @@ function ObjectsTab() {
             <label className={labelCls}>Path</label>
             <input className={inputCls} value={form.path} onChange={e => setForm(f => ({ ...f, path: e.target.value }))} />
           </div>
-          <div className="flex items-center gap-2">
-            <input type="checkbox" id="objActiveCheck" checked={form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} />
-            <label htmlFor="objActiveCheck" className="text-sm text-gray-700">Active</label>
+          <div className="flex items-center gap-2 pt-5">
+            <input type="checkbox" id="objActiveCheck" checked={form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} className="rounded" />
+            <label htmlFor="objActiveCheck" className="text-sm font-medium text-gray-700">Active</label>
           </div>
         </div>
       )}
@@ -322,39 +330,90 @@ function ObjectsTab() {
   )
 }
 
-// ─── Master Data Page ─────────────────────────────────────────────────────────
-const TABS = ['tenants', 'solutions', 'clients', 'objects']
+// ─── Tab Config ───────────────────────────────────────────────────────────────
+const TAB_CONFIG = [
+  { key: 'tenants', label: 'Tenants', icon: Server },
+  { key: 'solutions', label: 'Solutions', icon: Lightbulb },
+  { key: 'clients', label: 'Clients', icon: Users },
+  { key: 'objects', label: 'Objects', icon: Package },
+]
 
+// ─── Master Data Page ─────────────────────────────────────────────────────────
 export default function MasterData() {
   const [activeTab, setActiveTab] = useState('tenants')
+  const [counts, setCounts] = useState({ tenants: null, solutions: null, clients: null, objects: null })
+
+  const setCount = (key) => (val) => setCounts(c => ({ ...c, [key]: val }))
 
   return (
-    <div className="p-6">
-      <PageHeader title="Master Data" subtitle="Manage tenants, solutions, clients, and objects" />
-
-      <div className="bg-white rounded-lg border border-sap-gray-border overflow-hidden shadow-sm">
-        {/* Tab header */}
-        <div className="flex border-b border-sap-gray-border">
-          {TABS.map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-5 py-3 text-sm font-medium capitalize transition-colors border-b-2 -mb-px ${
-                activeTab === tab
-                  ? 'border-sap-blue text-sap-blue'
-                  : 'border-transparent text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+    <div className="min-h-full">
+      {/* Header */}
+      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 px-6 pt-8 pb-20">
+        <div>
+          <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1">Configuration</p>
+          <h1 className="text-white text-3xl font-black tracking-tight">Master Data</h1>
+          <p className="text-slate-400 text-sm mt-1">Tenants, solutions, clients, and objects</p>
         </div>
+        {/* Stats row in header */}
+        <div className="grid grid-cols-4 gap-3 mt-6">
+          {TAB_CONFIG.map(tab => {
+            const Icon = tab.icon
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center gap-2 p-3 rounded-xl text-left transition-all border ${activeTab === tab.key ? 'bg-white/15 border-white/30 text-white' : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'}`}
+              >
+                <Icon size={15} className={activeTab === tab.key ? 'text-blue-300' : 'text-slate-400'} />
+                <div>
+                  <p className="text-xs font-semibold">{tab.label}</p>
+                  {counts[tab.key] !== null && (
+                    <p className={`text-lg font-black leading-none mt-0.5 ${activeTab === tab.key ? 'text-white' : 'text-slate-200'}`}>
+                      {counts[tab.key]}
+                    </p>
+                  )}
+                </div>
+              </button>
+            )
+          })}
+        </div>
+      </div>
 
-        {/* Tab content */}
-        {activeTab === 'tenants' && <TenantsTab />}
-        {activeTab === 'solutions' && <SolutionsTab />}
-        {activeTab === 'clients' && <ClientsTab />}
-        {activeTab === 'objects' && <ObjectsTab />}
+      {/* Main content card */}
+      <div className="px-6 -mt-4 pb-6">
+        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-gray-50 overflow-hidden">
+          {/* Tab bar */}
+          <div className="flex border-b border-gray-100 px-2">
+            {TAB_CONFIG.map(tab => {
+              const Icon = tab.icon
+              return (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`flex items-center gap-2 px-5 py-4 text-sm font-semibold transition-colors border-b-2 -mb-px ${
+                    activeTab === tab.key
+                      ? 'border-sap-blue text-sap-blue'
+                      : 'border-transparent text-gray-500 hover:text-gray-800'
+                  }`}
+                >
+                  <Icon size={14} />
+                  {tab.label}
+                  {counts[tab.key] !== null && (
+                    <span className={`ml-1 text-xs font-bold px-1.5 py-0.5 rounded-full ${activeTab === tab.key ? 'bg-blue-100 text-sap-blue' : 'bg-gray-100 text-gray-500'}`}>
+                      {counts[tab.key]}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Tab content */}
+          {activeTab === 'tenants' && <TenantsTab onCount={setCount('tenants')} />}
+          {activeTab === 'solutions' && <SolutionsTab onCount={setCount('solutions')} />}
+          {activeTab === 'clients' && <ClientsTab onCount={setCount('clients')} />}
+          {activeTab === 'objects' && <ObjectsTab onCount={setCount('objects')} />}
+        </div>
       </div>
     </div>
   )
