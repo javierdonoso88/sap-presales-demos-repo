@@ -33,8 +33,12 @@ cds.on('bootstrap', app => {
   app.use(errorHandler);
 });
 
-// Explicitly start CAP's HTTP server (listens on process.env.PORT)
-cds.serve('all').catch(err => {
-  console.error('CAP server failed to start:', err);
-  process.exit(1);
-});
+// Serve DemoService using pre-compiled CSN (avoids resolving ../db/schema at runtime in CF).
+// Pass the class directly to .with() so CDS instantiates it without @source path resolution.
+cds.serve('DemoService')
+  .from(require('./csn.json'))
+  .with(require('./demo-service'))
+  .catch(err => {
+    console.error('CAP DemoService failed to start:', err);
+    process.exit(1);
+  });

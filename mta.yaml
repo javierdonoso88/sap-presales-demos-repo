@@ -9,6 +9,8 @@ build-parameters:
       commands:
         - npm ci
         - npx cds build --for hana
+        - npx cds build --for nodejs
+        - cp gen/srv/srv/csn.json srv/csn.json
         - npm ci --prefix ui
         - npm run build --prefix ui
         - npm ci --prefix srv --production
