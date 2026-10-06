@@ -33,12 +33,24 @@ cds.on('bootstrap', app => {
   app.use(errorHandler);
 });
 
-// Serve DemoService using pre-compiled CSN (avoids resolving ../db/schema at runtime in CF).
-// Pass the class directly to .with() so CDS instantiates it without @source path resolution.
-cds.serve('DemoService')
-  .from(require('./csn.json'))
-  .with(require('./demo-service'))
-  .catch(err => {
-    console.error('CAP DemoService failed to start:', err);
-    process.exit(1);
-  });
+// In CF deployment, demo-service.cds has 'using from ../db/schema' which is
+// outside the srv/ deployment folder. Intercept cds.load('*') to return the
+// pre-compiled CSN (built by 'cds build' and shipped as srv/csn.json) instead
+// of scanning .cds files that would fail to resolve cross-directory imports.
+const compiledCSN = require('./csn.json');
+const _cdsLoad = cds.load;
+cds.load = async function (files, options) {
+  if (!files || files === '*') return compiledCSN;
+  return _cdsLoad.call(this, files, options);
+};
+
+// cds.server fires 'bootstrap', connects to HANA DB, serves DemoService,
+// and starts the HTTP listener on process.env.PORT — keeps the process alive.
+cds.server({
+  service: 'DemoService',
+  with: require('./demo-service')
+}).catch(err => {
+  console.error('Server failed to start:', err);
+  process.exit(1);
+});
+
