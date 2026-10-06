@@ -12,3 +12,4 @@ srv/public/
 srv/node_modules/
 ui/node_modules/
 ui/dist/
+Makefile_*.mta
