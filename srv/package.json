@@ -15,6 +15,9 @@
     "passport": "^0",
     "uuid": "^9",
     "cors": "^2",
-    "helmet": "^7"
+    "helmet": "^7",
+    "multer": "^1",
+    "@aws-sdk/client-s3": "^3",
+    "@aws-sdk/s3-request-presigner": "^3"
   }
 }

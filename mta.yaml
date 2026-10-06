@@ -34,6 +34,7 @@ modules:
     requires:
       - name: sap-presales-demos-auth
       - name: sap-presales-demos-db
+      - name: sap-presales-demos-objectstore
 
   # ── HANA DB Deployer ──────────────────────────────────────────────────────────
   - name: sap-presales-demos-db-deployer
@@ -81,3 +82,11 @@ resources:
     type: org.cloudfoundry.existing-service
     parameters:
       service-name: sap-presales-demos-repo
+
+  # ── Object Store (S3) ────────────────────────────────────────────────────────
+  - name: sap-presales-demos-objectstore
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: objectstore
+      service-plan: s3-standard
+      service-name: sap-presales-demos-objectstore

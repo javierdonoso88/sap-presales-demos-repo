@@ -243,6 +243,24 @@ router.delete('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
 
+    // Clean up S3 objects before the DB transaction
+    try {
+      const { getS3 } = require('../config/objectstore');
+      const { DeleteObjectsCommand } = require('@aws-sdk/client-s3');
+      const attachments = await query(
+        `SELECT OBJECTKEY FROM SAP_PRESALES_DEMOS_DEMOATTACHMENTS WHERE DEMO_ID = ?`, [id]
+      );
+      if (attachments.length) {
+        const { client, bucket } = getS3();
+        if (client) {
+          await client.send(new DeleteObjectsCommand({
+            Bucket: bucket,
+            Delete: { Objects: attachments.map(a => ({ Key: a.OBJECTKEY })) }
+          }));
+        }
+      }
+    } catch { /* S3 cleanup is best-effort */ }
+
     await transaction(async (conn) => {
       const exec = (sql, params) => new Promise((res, rej) =>
         conn.exec(sql, params, (err, result) => err ? rej(err) : res(result))
@@ -252,6 +270,7 @@ router.delete('/:id', async (req, res, next) => {
       await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOSOLUTIONS WHERE DEMO_ID = ?`, [id]);
       await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOOBJECTS WHERE DEMO_ID = ?`, [id]);
       await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOCLIENTS WHERE DEMO_ID = ?`, [id]);
+      await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOATTACHMENTS WHERE DEMO_ID = ?`, [id]);
       await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOS WHERE ID = ?`, [id]);
     });
 

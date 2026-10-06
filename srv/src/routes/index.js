@@ -4,6 +4,7 @@ const { Router } = require('express');
 const router = Router();
 
 router.use('/demos', require('./demos'));
+router.use('/demos/:id/attachments', require('./attachments'));
 router.use('/tenants', require('./tenants'));
 router.use('/solutions', require('./solutions'));
 router.use('/clients', require('./clients'));

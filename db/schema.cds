@@ -118,3 +118,11 @@ entity DemoClients {
     result               : DemoResult;
     feedback             : String(2000);
 }
+
+entity DemoAttachments : cuid, managed {
+    demo        : Association to Demos @mandatory;
+    filename    : String(255)          @mandatory;
+    contentType : String(100);
+    size        : Integer64;
+    objectKey   : String(500);
+}
