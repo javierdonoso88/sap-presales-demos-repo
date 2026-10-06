@@ -1,13 +1,14 @@
 {
   "name": "sap-presales-demos-srv",
   "version": "1.0.0",
-  "description": "SAP Analytics Presales Demo Repository – Express API",
+  "description": "SAP Analytics Presales Demo Repository – CAP + Express API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "engines": { "node": ">=18" },
   "dependencies": {
+    "@sap/cds": "^8",
     "express": "^4",
     "@sap/hana-client": "^2",
     "@sap/xssec": "^3",
@@ -19,5 +20,12 @@
     "multer": "^1",
     "@aws-sdk/client-s3": "^3",
     "@aws-sdk/s3-request-presigner": "^3"
+  },
+  "cds": {
+    "requires": {
+      "db": {
+        "kind": "hana"
+      }
+    }
   }
 }

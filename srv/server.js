@@ -1,45 +1,36 @@
 'use strict';
 
+const cds = require('@sap/cds');
 const express = require('express');
 const helmet = require('helmet');
-const cors = require('cors');
 const path = require('path');
 
 const authMiddleware = require('./src/middleware/auth');
 const apiRouter = require('./src/routes/index');
 const errorHandler = require('./src/middleware/errorHandler');
 
-const app = express();
+// Mount custom Express middleware and routes during CAP bootstrap.
+// Routes added here are checked BEFORE CAP's own service routes.
+// Non-matching paths fall through to CAP (e.g. /api/systems → CAP).
+cds.on('bootstrap', app => {
+  app.use(helmet({ contentSecurityPolicy: false }));
+  app.use(express.json());
 
-// Security headers — CSP disabled, managed by approuter
-app.use(helmet({ contentSecurityPolicy: false }));
+  // JWT auth applies to all routes (custom + CAP)
+  app.use(authMiddleware);
 
-// CORS
-app.use(cors());
+  // Custom routes — systems handled by CAP, everything else here
+  app.use('/api', apiRouter);
 
-// JSON body parser
-app.use(express.json());
+  // Static UI build
+  app.use(express.static(path.join(__dirname, 'public')));
 
-// JWT auth on ALL routes
-app.use(authMiddleware);
+  // SPA fallback
+  app.get(/^(?!\/api).*$/, (_req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  });
 
-// API router
-app.use('/api', apiRouter);
-
-// Static files
-app.use(express.static(path.join(__dirname, 'public')));
-
-// SPA fallback — any GET not starting with /api returns index.html
-app.get(/^(?!\/api).*$/, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  app.use(errorHandler);
 });
 
-// Error handler (must be last)
-app.use(errorHandler);
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`SAP Presales Demos API listening on port ${PORT}`);
-});
-
-module.exports = app;
+module.exports = cds.server;

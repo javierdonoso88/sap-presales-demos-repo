@@ -1,108 +1,83 @@
 namespace sap.presales.demos;
+using { cuid } from '@sap/cds/common';
 
-using { cuid, managed } from '@sap/cds/common';
-
-// ─── Value Types ─────────────────────────────────────────────────────────────
-
-type SystemType : String(20) enum {
-    SAC        = 'SAC';
-    DATASPHERE = 'DATASPHERE';
-    BDC        = 'BDC';
-    S4HANA     = 'S4HANA';
-    BW4HANA    = 'BW4HANA';
-    OTHER      = 'OTHER';
-}
-
-type SystemLandscape : String(20) enum {
-    BDC_GA   = 'BDC_GA';
-    GLA26Q2  = 'GLA26Q2';
-    SANDBOX  = 'SANDBOX';
-    EXTERNAL = 'EXTERNAL';
-}
-
-type DemoStatus : String(20) enum {
-    DRAFT    = 'DRAFT';
-    READY    = 'READY';
-    ARCHIVED = 'ARCHIVED';
-}
-
-type DemoResult : String(20) enum {
-    VERY_INTERESTED = 'VERY_INTERESTED';
-    INTERESTED      = 'INTERESTED';
-    NEUTRAL         = 'NEUTRAL';
-    NOT_INTERESTED  = 'NOT_INTERESTED';
+// Managed timestamps/user aspect using UPPERCASE column names
+// (matches existing HANA table columns — no migration needed)
+aspect managed_uc {
+  CREATEDAT  : Timestamp @cds.on.insert: $now;
+  CREATEDBY  : String(255) @cds.on.insert: $user;
+  MODIFIEDAT : Timestamp @cds.on.insert: $now @cds.on.update: $now;
+  MODIFIEDBY : String(255) @cds.on.insert: $user @cds.on.update: $user;
 }
 
 // ─── Master Data ─────────────────────────────────────────────────────────────
 
-entity Systems : cuid, managed {
-    name        : String(100)     @mandatory;
-    type        : SystemType      @mandatory;
-    landscape   : SystemLandscape;
-    url         : String(255);
-    description : String(1000);
-    active      : Boolean default true;
+entity Systems : cuid, managed_uc {
+  NAME        : String(100);
+  TYPE        : String(20);
+  LANDSCAPE   : String(20);
+  URL         : String(255);
+  DESCRIPTION : String(1000);
+  ACTIVE      : Boolean default true;
 }
 
-entity Clients : cuid, managed {
-    name     : String(100) @mandatory;
-    industry : String(100);
-    country  : String(3);
-    contact  : String(100);
-    email    : String(200);
+entity Clients : cuid, managed_uc {
+  NAME     : String(100);
+  INDUSTRY : String(100);
+  COUNTRY  : String(3);
+  CONTACT  : String(100);
+  EMAIL    : String(200);
 }
 
 // ─── Core Entity ─────────────────────────────────────────────────────────────
 
-entity Demos : cuid, managed {
-    title       : String(200)                    @mandatory @title: 'Título';
-    description : String(3000)                   @title: 'Descripción';
-    demoDate    : Date                           @title: 'Fecha demo';
-    status      : DemoStatus default 'DRAFT'    @title: 'Estado';
-    tags        : String(500)                   @title: 'Tags';
-    systems     : Composition of many DemoSystems on systems.demo = $self;
-    clients     : Composition of many DemoClients on clients.demo = $self;
+entity Demos : cuid, managed_uc {
+  TITLE       : String(200);
+  DESCRIPTION : String(3000);
+  DEMODATE    : Date;
+  STATUS      : String(20) default 'DRAFT';
+  TAGS        : String(500);
 }
 
-// ─── Association Tables ───────────────────────────────────────────────────────
+// ─── Association / Junction Tables ───────────────────────────────────────────
 
 entity DemoSystems {
-    key demo   : Association to Demos;
-    key system : Association to Systems;
-    notes      : String(500);
+  key DEMO_ID   : UUID;
+  key SYSTEM_ID : UUID;
+  NOTES         : String(500);
 }
 
 entity DemoClients {
-    key demo         : Association to Demos;
-    key client       : Association to Clients;
-    presentationDate : Date;
-    result           : DemoResult;
-    feedback         : String(2000);
+  key DEMO_ID          : UUID;
+  key CLIENT_ID        : UUID;
+  PRESENTATIONDATE     : Date;
+  RESULT               : String(20);
+  FEEDBACK             : String(2000);
 }
 
-entity DemoAttachments : cuid, managed {
-    demo        : Association to Demos @mandatory;
-    filename    : String(255)          @mandatory;
-    contentType : String(100);
-    size        : Integer64;
-    objectKey   : String(500);
+entity DemoAttachments : cuid, managed_uc {
+  DEMO_ID     : UUID;
+  FILENAME    : String(255);
+  CONTENTTYPE : String(100);
+  SIZE        : Integer64;
+  OBJECTKEY   : String(500);
 }
 
 // ─── History & Share ──────────────────────────────────────────────────────────
 
 entity DemoHistory : cuid {
-    demo      : Association to Demos @mandatory;
-    changedAt : DateTime;
-    changedBy : String(255);
-    field     : String(100);
-    oldValue  : String(2000);
-    newValue  : String(2000);
+  DEMO_ID   : UUID;
+  CHANGEDAT : Timestamp;
+  CHANGEDBY : String(255);
+  FIELD     : String(100);
+  OLDVALUE  : String(2000);
+  NEWVALUE  : String(2000);
 }
 
 entity ShareTokens {
-    key token  : UUID;
-    demo       : Association to Demos @mandatory;
-    createdAt  : DateTime;
-    createdBy  : String(255);
-    expiresAt  : DateTime;
+  key TOKEN    : UUID;
+  DEMO_ID      : UUID;
+  CREATEDAT    : Timestamp;
+  CREATEDBY    : String(255);
+  EXPIRESAT    : Timestamp;
 }
