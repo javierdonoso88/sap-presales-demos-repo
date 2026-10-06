@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom'
 import {
-  BookOpen, CheckCircle, Edit3, Calendar,
-  PieChart as PieChartIcon
+  BookOpen, CheckCircle, Edit3, Calendar
 } from 'lucide-react'
 import {
-  PieChart, Pie, Cell,
+  PieChart, Pie, Cell, Legend,
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid
 } from 'recharts'
 import { useDashboard } from '../hooks/useDashboard'
@@ -12,7 +11,7 @@ import PageHeader from '../components/shared/PageHeader'
 import Spinner from '../components/shared/Spinner'
 import StatusBadge from '../components/shared/StatusBadge'
 
-const DONUT_COLORS = {
+const STATUS_COLORS = {
   DRAFT: '#6a6d70',
   READY: '#107e3e',
   ARCHIVED: '#f0ab00',
@@ -44,8 +43,9 @@ function KpiCard({ label, value, icon: Icon, color }) {
 function RecentDemosTable({ demos = [] }) {
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-      <div className="px-4 py-3 border-b">
+      <div className="px-4 py-3 border-b flex items-center justify-between">
         <h2 className="text-base font-semibold text-gray-800">Recent Demos</h2>
+        <Link to="/demos" className="text-xs text-sap-blue hover:underline">View all →</Link>
       </div>
       <table className="w-full">
         <thead className="bg-gray-50 border-b">
@@ -72,11 +72,23 @@ function RecentDemosTable({ demos = [] }) {
         </tbody>
       </table>
       {demos.length === 0 && (
-        <div className="p-8 text-center text-gray-400">No recent demos</div>
+        <div className="p-8 text-center text-gray-400">No demos yet. <Link to="/demos/new" className="text-sap-blue hover:underline">Create one →</Link></div>
       )}
     </div>
   )
 }
+
+const CustomPieLegend = ({ byStatus }) => (
+  <div className="flex justify-center gap-5 mt-2">
+    {byStatus.map(entry => (
+      <div key={entry.status} className="flex items-center gap-1.5">
+        <div className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: STATUS_COLORS[entry.status] || '#ccc' }} />
+        <span className="text-xs text-gray-600">{entry.status}</span>
+        <span className="text-xs font-semibold text-gray-900">{entry.count}</span>
+      </div>
+    ))}
+  </div>
+)
 
 export default function Dashboard() {
   const { data, loading, error } = useDashboard()
@@ -93,7 +105,8 @@ export default function Dashboard() {
     return (
       <div className="p-6">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
-          Failed to load dashboard data. Please try again later.
+          <p className="font-semibold">Failed to load dashboard data.</p>
+          <p className="text-sm mt-1 text-red-600">{error?.message || error?.error || String(error)}</p>
         </div>
       </div>
     )
@@ -104,6 +117,9 @@ export default function Dashboard() {
   const bySolution = data?.bySolution || []
   const byMonth = data?.byMonth || []
   const recentDemos = data?.recentDemos || []
+
+  // Only include non-zero statuses in the donut chart
+  const byStatusForChart = byStatus.filter(s => s.count > 0)
 
   return (
     <div className="p-6">
@@ -125,37 +141,34 @@ export default function Dashboard() {
         {/* Status Donut */}
         <div className="bg-white rounded-lg p-4 shadow-sm">
           <h2 className="text-base font-semibold text-gray-800 mb-3">Demos by Status</h2>
-          {byStatus.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie
-                  data={byStatus}
-                  dataKey="count"
-                  nameKey="status"
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={55}
-                  outerRadius={85}
-                  paddingAngle={3}
-                >
-                  {byStatus.map((entry, index) => (
-                    <Cell key={index} fill={DONUT_COLORS[entry.status] || '#ccc'} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(val, name) => [val, name]} />
-              </PieChart>
-            </ResponsiveContainer>
+          {byStatusForChart.length > 0 ? (
+            <>
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie
+                    data={byStatusForChart}
+                    dataKey="count"
+                    nameKey="status"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={55}
+                    outerRadius={85}
+                    paddingAngle={2}
+                  >
+                    {byStatusForChart.map((entry, index) => (
+                      <Cell key={index} fill={STATUS_COLORS[entry.status] || '#ccc'} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(val, name) => [`${val} demos`, name]} />
+                </PieChart>
+              </ResponsiveContainer>
+              <CustomPieLegend byStatus={byStatus} />
+            </>
           ) : (
-            <div className="flex items-center justify-center h-40 text-gray-400 text-sm">No data</div>
+            <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
+              No demos yet
+            </div>
           )}
-          <div className="flex justify-center gap-4 mt-2">
-            {Object.entries(DONUT_COLORS).map(([status, color]) => (
-              <div key={status} className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
-                <span className="text-xs text-gray-600">{status}</span>
-              </div>
-            ))}
-          </div>
         </div>
 
         {/* By Solution Bar */}
@@ -163,23 +176,25 @@ export default function Dashboard() {
           <h2 className="text-base font-semibold text-gray-800 mb-3">Demos by Solution</h2>
           {bySolution.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={bySolution} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
+              <BarChart data={bySolution} margin={{ top: 5, right: 10, left: -20, bottom: 40 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-30} textAnchor="end" interval={0} />
                 <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                 <Tooltip />
-                <Bar dataKey="count" fill="#0070f2" radius={[3, 3, 0, 0]} />
+                <Bar dataKey="count" fill="#0070f2" radius={[3, 3, 0, 0]} name="Demos" />
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex items-center justify-center h-40 text-gray-400 text-sm">No data</div>
+            <div className="flex items-center justify-center h-48 text-gray-400 text-sm">
+              No solution data yet
+            </div>
           )}
         </div>
       </div>
 
       {/* Monthly Trend */}
       <div className="bg-white rounded-lg p-4 shadow-sm mb-6">
-        <h2 className="text-base font-semibold text-gray-800 mb-3">Monthly Trend</h2>
+        <h2 className="text-base font-semibold text-gray-800 mb-3">Monthly Trend (last 6 months)</h2>
         {byMonth.length > 0 ? (
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={byMonth} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
@@ -187,11 +202,13 @@ export default function Dashboard() {
               <XAxis dataKey="month" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
               <Tooltip />
-              <Bar dataKey="count" fill="#0070f2" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="count" fill="#0070f2" radius={[3, 3, 0, 0]} name="Demos" />
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <div className="flex items-center justify-center h-32 text-gray-400 text-sm">No data</div>
+          <div className="flex items-center justify-center h-32 text-gray-400 text-sm">
+            No demos created in the last 6 months
+          </div>
         )}
       </div>
 

@@ -40,6 +40,8 @@ async function getDemoById(id) {
   const objects = await query(
     `SELECT dob.OBJECT_ID, dob.NOTES,
             co.NAME, co.OBJECTTYPE,
+            co.TENANT_ID AS OBJECT_TENANT_ID,
+            co.SOLUTION_ID AS OBJECT_SOLUTION_ID,
             t.NAME AS TENANT_NAME,
             s.NAME AS SOLUTION_NAME
      FROM SAP_PRESALES_DEMOS_DEMOOBJECTS dob
