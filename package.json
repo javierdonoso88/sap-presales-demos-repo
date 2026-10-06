@@ -3,39 +3,12 @@
   "version": "1.0.0",
   "description": "SAP Analytics Presales Demo Repository",
   "scripts": {
-    "start": "cds-serve",
-    "watch": "cds watch",
-    "build:cf": "mbt build -t gen --mtar mta.tar",
-    "deploy:cf": "cf deploy gen/mta.tar"
-  },
-  "dependencies": {
-    "@cap-js/hana": "^1",
-    "@sap/cds": "^8",
-    "@sap/xssec": "^3",
-    "express": "^4",
-    "passport": "^0"
+    "build:hana": "npx cds build --for hana",
+    "build:ui": "npm ci --prefix ui && npm run build --prefix ui",
+    "build:cf": "mbt build -t gen",
+    "deploy:cf": "cf deploy gen/sap-presales-demos-repo_1.0.0.mtar"
   },
   "devDependencies": {
-    "@cap-js/sqlite": "^1",
     "@sap/cds-dk": "^8"
-  },
-  "cds": {
-    "requires": {
-      "db": {
-        "kind": "sqlite",
-        "[production]": {
-          "kind": "hana"
-        }
-      },
-      "auth": {
-        "kind": "dummy",
-        "[production]": {
-          "kind": "xsuaa"
-        }
-      }
-    },
-    "features": {
-      "fetch_csrf": true
-    }
   }
 }

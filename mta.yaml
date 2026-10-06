@@ -8,23 +8,25 @@ build-parameters:
     - builder: custom
       commands:
         - npm ci
-        - npx cds build --production
-        - mkdir -p gen/srv/app/presales-demos gen/srv/app/admin-data
-        - cp -r app/presales-demos/webapp gen/srv/app/presales-demos/webapp
-        - cp -r app/admin-data/webapp gen/srv/app/admin-data/webapp
+        - npx cds build --for hana
+        - npm ci --prefix ui
+        - npm run build --prefix ui
+        - npm ci --prefix srv --production
 
 modules:
 
-  # ── CAP Service ──────────────────────────────────────────────────────────────
+  # ── Express API + React SPA ───────────────────────────────────────────────────
   - name: sap-presales-demos-srv
     type: nodejs
-    path: gen/srv
+    path: srv
     parameters:
       buildpack: nodejs_buildpack
-      memory: 256M
-      disk-quota: 512M
+      memory: 512M
+      disk-quota: 1024M
     build-parameters:
       builder: npm-ci
+      ignore:
+        - node_modules/
     provides:
       - name: srv-api
         properties:
@@ -74,7 +76,7 @@ resources:
         xsappname: sap-presales-demos-repo-${org}-${space}
         tenant-mode: dedicated
 
-  # ── HANA Cloud HDI Container (instancia existente) ───────────────────────────
+  # ── HANA Cloud HDI Container ─────────────────────────────────────────────────
   - name: sap-presales-demos-db
     type: org.cloudfoundry.existing-service
     parameters:

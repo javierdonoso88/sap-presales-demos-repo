@@ -1,19 +1,12 @@
 {
-  "welcomeFile": "/presales-demos/webapp/index.html",
+  "welcomeFile": "/index.html",
   "authenticationMethod": "route",
   "sessionTimeout": 30,
   "routes": [
     {
-      "source": "^/demo/(.*)$",
+      "source": "^/api/(.*)$",
       "destination": "srv-api",
       "authenticationType": "xsuaa",
-      "csrfProtection": false
-    },
-    {
-      "source": "^/admin/(.*)$",
-      "destination": "srv-api",
-      "authenticationType": "xsuaa",
-      "scope": "$XSAPPNAME.DemoAdmin",
       "csrfProtection": false
     },
     {

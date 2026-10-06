@@ -1,0 +1,20 @@
+{
+  "name": "sap-presales-demos-srv",
+  "version": "1.0.0",
+  "description": "SAP Analytics Presales Demo Repository – Express API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "express": "^4",
+    "@sap/hana-client": "^2",
+    "@sap/xssec": "^3",
+    "@sap/xsenv": "^4",
+    "passport": "^0",
+    "uuid": "^9",
+    "cors": "^2",
+    "helmet": "^7"
+  }
+}

@@ -7,3 +7,7 @@ mta_archives/
 dist/
 .DS_Store
 approuter/node_modules/
+srv/public/
+srv/node_modules/
+ui/node_modules/
+ui/dist/
