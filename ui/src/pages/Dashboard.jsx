@@ -139,7 +139,7 @@ export default function Dashboard() {
 
   const totals = data?.totals || {}
   const byStatus = data?.byStatus || []
-  const bySolution = data?.bySolution || []
+  const bySystemType = data?.bySystemType || []
   const byMonth = data?.byMonth || []
   const recentDemos = data?.recentDemos || []
 
@@ -260,12 +260,12 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* By Solution */}
+          {/* By System Type */}
           <div className="col-span-3 bg-white rounded-2xl p-5 shadow-xl shadow-slate-200/60 border border-gray-50">
-            <h2 className="text-sm font-bold text-gray-900 mb-4">Demos by Solution</h2>
-            {bySolution.length > 0 ? (
+            <h2 className="text-sm font-bold text-gray-900 mb-4">Demos by System Type</h2>
+            {bySystemType.length > 0 ? (
               <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={bySolution} margin={{ top: 5, right: 10, left: -25, bottom: 40 }} barCategoryGap="35%">
+                <BarChart data={bySystemType} margin={{ top: 5, right: 10, left: -25, bottom: 20 }} barCategoryGap="35%">
                   <defs>
                     <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor="#0070f2" stopOpacity={1} />
@@ -273,7 +273,7 @@ export default function Dashboard() {
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }} angle={-30} textAnchor="end" interval={0} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="type" tick={{ fontSize: 11, fill: '#94a3b8', fontWeight: 600 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} allowDecimals={false} axisLine={false} tickLine={false} />
                   <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8faff' }} />
                   <Bar dataKey="count" fill="url(#barGrad)" radius={[8, 8, 0, 0]} />
@@ -281,7 +281,7 @@ export default function Dashboard() {
               </ResponsiveContainer>
             ) : (
               <div className="flex flex-col items-center justify-center h-52 text-center">
-                <p className="text-sm text-gray-400">No solution data yet</p>
+                <p className="text-sm text-gray-400">No system data yet</p>
               </div>
             )}
           </div>

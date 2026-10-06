@@ -15,7 +15,5 @@ function useResource(path) {
   return { items, loading }
 }
 
-export const useTenants = () => useResource('/tenants')
-export const useSolutions = () => useResource('/solutions')
+export const useSystems = () => useResource('/systems')
 export const useClients = () => useResource('/clients')
-export const useObjects = () => useResource('/objects')

@@ -9,7 +9,7 @@ import {
   Image, ChevronRight, Paperclip, AlertCircle
 } from 'lucide-react'
 
-const TABS = ['General', 'Tenants', 'Solutions', 'Objects', 'Clients', 'Attachments']
+const TABS = ['General', 'Systems', 'Clients', 'Attachments']
 
 // ─── File helpers ─────────────────────────────────────────────────────────────
 
@@ -375,43 +375,8 @@ export default function DemoDetail() {
               </div>
             )}
 
-            {activeTab === 'Tenants' && (
-              <AssociationTable
-                items={demo.tenants || []}
-                columns={[
-                  { label: 'Name', key: 'NAME' },
-                  { label: 'Type', key: 'TYPE' },
-                  { label: 'URL', key: 'URL', render: v => v ? <a href={v} target="_blank" rel="noreferrer" className="text-sap-blue hover:underline text-xs font-mono">{v}</a> : '—' },
-                  { label: 'Notes', key: 'NOTES' },
-                ]}
-                emptyMsg="No tenants associated with this demo."
-              />
-            )}
-
-            {activeTab === 'Solutions' && (
-              <AssociationTable
-                items={demo.solutions || []}
-                columns={[
-                  { label: 'Name', key: 'NAME' },
-                  { label: 'Area', key: 'AREA' },
-                  { label: 'Notes', key: 'NOTES' },
-                ]}
-                emptyMsg="No solutions associated with this demo."
-              />
-            )}
-
-            {activeTab === 'Objects' && (
-              <AssociationTable
-                items={demo.objects || []}
-                columns={[
-                  { label: 'Name', key: 'NAME' },
-                  { label: 'Type', key: 'OBJECTTYPE' },
-                  { label: 'Tenant', key: 'TENANT_NAME' },
-                  { label: 'Solution', key: 'SOLUTION_NAME' },
-                  { label: 'Notes', key: 'NOTES' },
-                ]}
-                emptyMsg="No objects associated with this demo."
-              />
+            {activeTab === 'Systems' && (
+              <SystemsSection systems={demo.systems || []} />
             )}
 
             {activeTab === 'Clients' && (
@@ -432,6 +397,70 @@ export default function DemoDetail() {
           </div>
         </div>
       </div>
+    </div>
+  )
+}
+
+const TYPE_COLORS = {
+  SAC:        'bg-teal-100 text-teal-700',
+  DATASPHERE: 'bg-blue-100 text-blue-700',
+  BDC:        'bg-indigo-100 text-indigo-700',
+  S4HANA:     'bg-emerald-100 text-emerald-700',
+  BW4HANA:    'bg-orange-100 text-orange-700',
+  OTHER:      'bg-gray-100 text-gray-600',
+}
+const LANDSCAPE_LABELS = { BDC_GA: 'BDC GA', GLA26Q2: 'GLA26Q2', SANDBOX: 'Sandbox', EXTERNAL: 'External' }
+const LANDSCAPE_COLORS = {
+  BDC_GA:   'bg-blue-100 text-blue-700',
+  GLA26Q2:  'bg-violet-100 text-violet-700',
+  SANDBOX:  'bg-amber-100 text-amber-700',
+  EXTERNAL: 'bg-gray-100 text-gray-600',
+}
+
+function SystemsSection({ systems }) {
+  if (systems.length === 0) {
+    return <div className="text-center py-10 text-sm text-gray-400">No systems associated with this demo.</div>
+  }
+  return (
+    <div className="overflow-hidden rounded-xl border border-gray-100">
+      <table className="w-full">
+        <thead>
+          <tr className="bg-gray-50 border-b border-gray-100">
+            <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">System</th>
+            <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Type</th>
+            <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Landscape</th>
+            <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">URL</th>
+            <th className="px-4 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {systems.map((sys, i) => (
+            <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
+              <td className="px-4 py-3 text-sm font-medium text-gray-800">{sys.NAME || '—'}</td>
+              <td className="px-4 py-3">
+                {sys.TYPE ? (
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${TYPE_COLORS[sys.TYPE] || TYPE_COLORS.OTHER}`}>{sys.TYPE}</span>
+                ) : '—'}
+              </td>
+              <td className="px-4 py-3">
+                {sys.LANDSCAPE ? (
+                  <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${LANDSCAPE_COLORS[sys.LANDSCAPE] || LANDSCAPE_COLORS.EXTERNAL}`}>
+                    {LANDSCAPE_LABELS[sys.LANDSCAPE] || sys.LANDSCAPE}
+                  </span>
+                ) : '—'}
+              </td>
+              <td className="px-4 py-3">
+                {sys.URL ? (
+                  <a href={sys.URL} target="_blank" rel="noreferrer" className="text-sap-blue hover:underline text-xs font-mono inline-flex items-center gap-1">
+                    Open ↗
+                  </a>
+                ) : '—'}
+              </td>
+              <td className="px-4 py-3 text-sm text-gray-500">{sys.NOTES || '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }

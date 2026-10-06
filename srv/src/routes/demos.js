@@ -21,34 +21,11 @@ async function getDemoById(id) {
   if (!demos || demos.length === 0) return null;
   const demo = demos[0];
 
-  const tenants = await query(
-    `SELECT dt.TENANT_ID, dt.NOTES, t.NAME, t.TYPE, t.URL
-     FROM SAP_PRESALES_DEMOS_DEMOTENANTS dt
-     JOIN SAP_PRESALES_DEMOS_TENANTS t ON t.ID = dt.TENANT_ID
-     WHERE dt.DEMO_ID = ?`,
-    [id]
-  );
-
-  const solutions = await query(
-    `SELECT ds.SOLUTION_ID, ds.NOTES, s.NAME, s.AREA
-     FROM SAP_PRESALES_DEMOS_DEMOSOLUTIONS ds
-     JOIN SAP_PRESALES_DEMOS_SOLUTIONS s ON s.ID = ds.SOLUTION_ID
+  const systems = await query(
+    `SELECT ds.SYSTEM_ID, ds.NOTES, s.NAME, s.TYPE, s.LANDSCAPE, s.URL
+     FROM SAP_PRESALES_DEMOS_DEMOSYSTEMS ds
+     JOIN SAP_PRESALES_DEMOS_SYSTEMS s ON s.ID = ds.SYSTEM_ID
      WHERE ds.DEMO_ID = ?`,
-    [id]
-  );
-
-  const objects = await query(
-    `SELECT dob.OBJECT_ID, dob.NOTES,
-            co.NAME, co.OBJECTTYPE,
-            co.TENANT_ID AS OBJECT_TENANT_ID,
-            co.SOLUTION_ID AS OBJECT_SOLUTION_ID,
-            t.NAME AS TENANT_NAME,
-            s.NAME AS SOLUTION_NAME
-     FROM SAP_PRESALES_DEMOS_DEMOOBJECTS dob
-     JOIN SAP_PRESALES_DEMOS_COMPONENTOBJECTS co ON co.ID = dob.OBJECT_ID
-     LEFT JOIN SAP_PRESALES_DEMOS_TENANTS t ON t.ID = co.TENANT_ID
-     LEFT JOIN SAP_PRESALES_DEMOS_SOLUTIONS s ON s.ID = co.SOLUTION_ID
-     WHERE dob.DEMO_ID = ?`,
     [id]
   );
 
@@ -61,14 +38,14 @@ async function getDemoById(id) {
     [id]
   );
 
-  return { ...demo, tenants, solutions, objects, clients };
+  return { ...demo, systems, clients };
 }
 
 // ─── GET /demos ───────────────────────────────────────────────────────────────
 
 router.get('/', async (req, res, next) => {
   try {
-    const { status, search, solution_id } = req.query;
+    const { status, search, system_type } = req.query;
     let sql = `
       SELECT d.ID, d.TITLE, d.DESCRIPTION, d.DEMODATE, d.STATUS,
              d.CREATEDAT, d.CREATEDBY, d.MODIFIEDAT, d.MODIFIEDBY,
@@ -78,9 +55,10 @@ router.get('/', async (req, res, next) => {
     const params = [];
     const conditions = [];
 
-    if (solution_id) {
-      sql += ` JOIN SAP_PRESALES_DEMOS_DEMOSOLUTIONS ds ON ds.DEMO_ID = d.ID AND ds.SOLUTION_ID = ?`;
-      params.push(solution_id);
+    if (system_type) {
+      sql += ` JOIN SAP_PRESALES_DEMOS_DEMOSYSTEMS ds ON ds.DEMO_ID = d.ID
+               JOIN SAP_PRESALES_DEMOS_SYSTEMS s ON s.ID = ds.SYSTEM_ID AND s.TYPE = ?`;
+      params.push(system_type);
     }
 
     if (status) {
@@ -121,7 +99,7 @@ router.get('/:id', async (req, res, next) => {
 
 router.post('/', async (req, res, next) => {
   try {
-    const { title, description, demoDate, status, tenants = [], solutions = [], objects = [], clients = [] } = req.body;
+    const { title, description, demoDate, status, systems = [], clients = [] } = req.body;
     const id = uuidv4();
     const now = new Date().toISOString();
     const userEmail = getUserEmail(req.user);
@@ -138,24 +116,10 @@ router.post('/', async (req, res, next) => {
         [id, title, description, demoDate, status || 'DRAFT', now, userEmail, now, userEmail]
       );
 
-      for (const t of tenants) {
+      for (const sys of systems) {
         await exec(
-          `INSERT INTO SAP_PRESALES_DEMOS_DEMOTENANTS (DEMO_ID, TENANT_ID, NOTES) VALUES (?, ?, ?)`,
-          [id, t.id, t.notes || null]
-        );
-      }
-
-      for (const s of solutions) {
-        await exec(
-          `INSERT INTO SAP_PRESALES_DEMOS_DEMOSOLUTIONS (DEMO_ID, SOLUTION_ID, NOTES) VALUES (?, ?, ?)`,
-          [id, s.id, s.notes || null]
-        );
-      }
-
-      for (const o of objects) {
-        await exec(
-          `INSERT INTO SAP_PRESALES_DEMOS_DEMOOBJECTS (DEMO_ID, OBJECT_ID, NOTES) VALUES (?, ?, ?)`,
-          [id, o.id, o.notes || null]
+          `INSERT INTO SAP_PRESALES_DEMOS_DEMOSYSTEMS (DEMO_ID, SYSTEM_ID, NOTES) VALUES (?, ?, ?)`,
+          [id, sys.id, sys.notes || null]
         );
       }
 
@@ -179,7 +143,7 @@ router.post('/', async (req, res, next) => {
 router.put('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { title, description, demoDate, status, tenants = [], solutions = [], objects = [], clients = [] } = req.body;
+    const { title, description, demoDate, status, systems = [], clients = [] } = req.body;
     const now = new Date().toISOString();
     const userEmail = getUserEmail(req.user);
 
@@ -195,29 +159,13 @@ router.put('/:id', async (req, res, next) => {
         [title, description, demoDate, status, now, userEmail, id]
       );
 
-      await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOTENANTS WHERE DEMO_ID = ?`, [id]);
-      await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOSOLUTIONS WHERE DEMO_ID = ?`, [id]);
-      await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOOBJECTS WHERE DEMO_ID = ?`, [id]);
+      await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOSYSTEMS WHERE DEMO_ID = ?`, [id]);
       await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOCLIENTS WHERE DEMO_ID = ?`, [id]);
 
-      for (const t of tenants) {
+      for (const sys of systems) {
         await exec(
-          `INSERT INTO SAP_PRESALES_DEMOS_DEMOTENANTS (DEMO_ID, TENANT_ID, NOTES) VALUES (?, ?, ?)`,
-          [id, t.id, t.notes || null]
-        );
-      }
-
-      for (const s of solutions) {
-        await exec(
-          `INSERT INTO SAP_PRESALES_DEMOS_DEMOSOLUTIONS (DEMO_ID, SOLUTION_ID, NOTES) VALUES (?, ?, ?)`,
-          [id, s.id, s.notes || null]
-        );
-      }
-
-      for (const o of objects) {
-        await exec(
-          `INSERT INTO SAP_PRESALES_DEMOS_DEMOOBJECTS (DEMO_ID, OBJECT_ID, NOTES) VALUES (?, ?, ?)`,
-          [id, o.id, o.notes || null]
+          `INSERT INTO SAP_PRESALES_DEMOS_DEMOSYSTEMS (DEMO_ID, SYSTEM_ID, NOTES) VALUES (?, ?, ?)`,
+          [id, sys.id, sys.notes || null]
         );
       }
 
@@ -266,9 +214,7 @@ router.delete('/:id', async (req, res, next) => {
         conn.exec(sql, params, (err, result) => err ? rej(err) : res(result))
       );
 
-      await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOTENANTS WHERE DEMO_ID = ?`, [id]);
-      await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOSOLUTIONS WHERE DEMO_ID = ?`, [id]);
-      await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOOBJECTS WHERE DEMO_ID = ?`, [id]);
+      await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOSYSTEMS WHERE DEMO_ID = ?`, [id]);
       await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOCLIENTS WHERE DEMO_ID = ?`, [id]);
       await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOATTACHMENTS WHERE DEMO_ID = ?`, [id]);
       await exec(`DELETE FROM SAP_PRESALES_DEMOS_DEMOS WHERE ID = ?`, [id]);

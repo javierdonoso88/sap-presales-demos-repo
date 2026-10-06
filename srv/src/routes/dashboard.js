@@ -29,16 +29,16 @@ router.get('/stats', async (req, res, next) => {
       { status: 'ARCHIVED', count: Number(totals.ARCHIVED) }
     ];
 
-    // By solution
-    const bySolutionRows = await query(`
-      SELECT s.NAME, COUNT(DISTINCT ds.DEMO_ID) AS CNT
-      FROM SAP_PRESALES_DEMOS_DEMOSOLUTIONS ds
-      JOIN SAP_PRESALES_DEMOS_SOLUTIONS s ON s.ID = ds.SOLUTION_ID
-      GROUP BY s.ID, s.NAME
+    // By system type
+    const bySystemTypeRows = await query(`
+      SELECT s.TYPE AS type, COUNT(DISTINCT ds.DEMO_ID) AS CNT
+      FROM SAP_PRESALES_DEMOS_DEMOSYSTEMS ds
+      JOIN SAP_PRESALES_DEMOS_SYSTEMS s ON s.ID = ds.SYSTEM_ID
+      GROUP BY s.TYPE
       ORDER BY CNT DESC
     `);
 
-    const bySolution = bySolutionRows.map(r => ({ name: r.NAME, count: Number(r.CNT) }));
+    const bySystemType = bySystemTypeRows.map(r => ({ type: r.type, count: Number(r.CNT) }));
 
     // By month (last 6 months)
     const byMonthRows = await query(`
@@ -71,7 +71,7 @@ router.get('/stats', async (req, res, next) => {
           thisMonth: Number(totals.THIS_MONTH)
         },
         byStatus,
-        bySolution,
+        bySystemType,
         byMonth,
         recentDemos
       }

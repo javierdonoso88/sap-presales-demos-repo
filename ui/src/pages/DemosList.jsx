@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Plus, Search, CheckCircle, Edit3, Archive, Users, ChevronRight } from 'lucide-react'
 import { useDemos } from '../hooks/useDemos'
-import { useSolutions } from '../hooks/useMasterData'
 import Spinner from '../components/shared/Spinner'
 
 const STATUS_PILL = {
@@ -27,15 +26,14 @@ function StatCard({ label, value, icon: Icon, iconClass, dimmed }) {
 }
 
 export default function DemosList() {
-  const [filters, setFilters] = useState({ status: '', search: '', solution_id: '' })
+  const [filters, setFilters] = useState({ status: '', search: '', systemType: '' })
   const { demos, loading, error } = useDemos(filters)
-  const solutions = useSolutions()
 
   const ready = demos.filter(d => d.STATUS === 'READY').length
   const draft = demos.filter(d => d.STATUS === 'DRAFT').length
   const archived = demos.filter(d => d.STATUS === 'ARCHIVED').length
   const totalClients = demos.reduce((sum, d) => sum + (d.clientCount || 0), 0)
-  const hasFilters = filters.status || filters.search || filters.solution_id
+  const hasFilters = filters.status || filters.search || filters.systemType
 
   return (
     <div className="min-h-full">
@@ -89,16 +87,18 @@ export default function DemosList() {
           </select>
           <select
             className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sap-blue text-gray-700"
-            onChange={e => setFilters(f => ({ ...f, solution_id: e.target.value }))}
+            onChange={e => setFilters(f => ({ ...f, systemType: e.target.value }))}
           >
-            <option value="">All solutions</option>
-            {solutions.items.map(s => (
-              <option key={s.ID} value={s.ID}>{s.NAME}</option>
-            ))}
+            <option value="">All system types</option>
+            <option value="SAC">SAC</option>
+            <option value="DATASPHERE">Datasphere</option>
+            <option value="BDC">BDC</option>
+            <option value="S4HANA">S/4HANA</option>
+            <option value="BW4HANA">BW/4HANA</option>
           </select>
           {hasFilters && (
             <button
-              onClick={() => setFilters({ status: '', search: '', solution_id: '' })}
+              onClick={() => setFilters({ status: '', search: '', systemType: '' })}
               className="text-xs font-semibold text-gray-400 hover:text-gray-700 transition-colors"
             >
               Clear ✕

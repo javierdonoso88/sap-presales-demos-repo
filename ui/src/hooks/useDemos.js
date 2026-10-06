@@ -11,12 +11,12 @@ export function useDemos(filters = {}) {
     const params = {}
     if (filters.status) params.status = filters.status
     if (filters.search) params.search = filters.search
-    if (filters.solution_id) params.solution_id = filters.solution_id
+    if (filters.systemType) params.system_type = filters.systemType
     api.get('/demos', { params })
       .then(res => setDemos(res.data))
       .catch(setError)
       .finally(() => setLoading(false))
-  }, [filters.status, filters.search, filters.solution_id])
+  }, [filters.status, filters.search, filters.systemType])
 
   useEffect(() => { load() }, [load])
 

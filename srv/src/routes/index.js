@@ -5,10 +5,8 @@ const router = Router();
 
 router.use('/demos', require('./demos'));
 router.use('/demos/:id/attachments', require('./attachments'));
-router.use('/tenants', require('./tenants'));
-router.use('/solutions', require('./solutions'));
+router.use('/systems', require('./systems'));
 router.use('/clients', require('./clients'));
-router.use('/objects', require('./objects'));
 router.use('/dashboard', require('./dashboard'));
 
 module.exports = router;

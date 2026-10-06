@@ -1,7 +1,29 @@
 import { useState, useEffect } from 'react'
 import api from '../api/client'
 import Spinner from '../components/shared/Spinner'
-import { Building2, Lightbulb, Users, Package, Plus, Server } from 'lucide-react'
+import { Server, Users, Plus, ExternalLink } from 'lucide-react'
+
+const inputCls = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sap-blue focus:border-transparent'
+const labelCls = 'block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide'
+
+const SYSTEM_TYPES = ['SAC', 'DATASPHERE', 'BDC', 'S4HANA', 'BW4HANA', 'OTHER']
+const LANDSCAPES = ['BDC_GA', 'GLA26Q2', 'SANDBOX', 'EXTERNAL']
+
+const LANDSCAPE_LABELS = { BDC_GA: 'BDC GA', GLA26Q2: 'GLA26Q2', SANDBOX: 'Sandbox', EXTERNAL: 'External' }
+const LANDSCAPE_COLORS = {
+  BDC_GA:   'bg-blue-100 text-blue-700',
+  GLA26Q2:  'bg-violet-100 text-violet-700',
+  SANDBOX:  'bg-amber-100 text-amber-700',
+  EXTERNAL: 'bg-gray-100 text-gray-600',
+}
+const TYPE_COLORS = {
+  SAC:        'bg-teal-100 text-teal-700',
+  DATASPHERE: 'bg-blue-100 text-blue-700',
+  BDC:        'bg-indigo-100 text-indigo-700',
+  S4HANA:     'bg-emerald-100 text-emerald-700',
+  BW4HANA:    'bg-orange-100 text-orange-700',
+  OTHER:      'bg-gray-100 text-gray-600',
+}
 
 // ─── Generic CRUD Tab ─────────────────────────────────────────────────────────
 function CrudTab({ resource, columns, emptyForm, renderForm, onCountChange }) {
@@ -77,8 +99,6 @@ function CrudTab({ resource, columns, emptyForm, renderForm, onCountChange }) {
           {error}
         </div>
       )}
-
-      {/* Add/Edit Form */}
       {showAdd && (
         <div className="m-5 p-5 border-2 border-blue-100 rounded-2xl bg-blue-50/50">
           <h3 className="text-sm font-bold text-gray-800 mb-4">{editId ? 'Edit record' : 'Add new record'}</h3>
@@ -101,7 +121,6 @@ function CrudTab({ resource, columns, emptyForm, renderForm, onCountChange }) {
         </div>
       )}
 
-      {/* Table */}
       {loading ? (
         <div className="flex justify-center p-8"><Spinner /></div>
       ) : (
@@ -130,7 +149,7 @@ function CrudTab({ resource, columns, emptyForm, renderForm, onCountChange }) {
               <tr key={item.ID} className="group border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
                 {columns.map(col => (
                   <td key={col.key} className="px-5 py-3.5 text-sm text-gray-700">
-                    {col.render ? col.render(item[col.key]) : (item[col.key] ?? '—')}
+                    {col.render ? col.render(item[col.key], item) : (item[col.key] ?? '—')}
                   </td>
                 ))}
                 <td className="px-5 py-3.5 text-right">
@@ -153,22 +172,38 @@ function CrudTab({ resource, columns, emptyForm, renderForm, onCountChange }) {
   )
 }
 
-const inputCls = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sap-blue focus:border-transparent'
-const labelCls = 'block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide'
-
-// ─── Tenants Tab ──────────────────────────────────────────────────────────────
-function TenantsTab({ onCount }) {
+// ─── Systems Tab ──────────────────────────────────────────────────────────────
+function SystemsTab({ onCount }) {
   return (
     <CrudTab
-      resource="tenants"
+      resource="systems"
       onCountChange={onCount}
       columns={[
         { key: 'NAME', label: 'Name', field: 'name' },
-        { key: 'TYPE', label: 'Type', field: 'type' },
-        { key: 'URL', label: 'URL', field: 'url', render: v => v ? <a href={v} target="_blank" rel="noreferrer" className="text-sap-blue hover:underline text-xs font-mono truncate max-w-xs inline-block">{v}</a> : '—' },
-        { key: 'ACTIVE', label: 'Active', field: 'active', render: v => v ? <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Active</span> : <span className="text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Inactive</span> },
+        {
+          key: 'TYPE', label: 'Type', field: 'type',
+          render: v => v ? <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${TYPE_COLORS[v] || TYPE_COLORS.OTHER}`}>{v}</span> : '—'
+        },
+        {
+          key: 'LANDSCAPE', label: 'Landscape', field: 'landscape',
+          render: v => v ? <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${LANDSCAPE_COLORS[v] || LANDSCAPE_COLORS.EXTERNAL}`}>{LANDSCAPE_LABELS[v] || v}</span> : '—'
+        },
+        {
+          key: 'URL', label: 'URL', field: 'url',
+          render: v => v ? (
+            <a href={v} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sap-blue hover:underline text-xs font-mono">
+              <ExternalLink size={11} /> Open
+            </a>
+          ) : '—'
+        },
+        {
+          key: 'ACTIVE', label: 'Active', field: 'active',
+          render: v => v
+            ? <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Active</span>
+            : <span className="text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Inactive</span>
+        },
       ]}
-      emptyForm={{ name: '', type: '', url: '', description: '', active: true }}
+      emptyForm={{ name: '', type: 'SAC', landscape: 'BDC_GA', url: '', description: '', active: true }}
       renderForm={(form, setForm) => (
         <div className="grid grid-cols-2 gap-3">
           <div>
@@ -176,52 +211,29 @@ function TenantsTab({ onCount }) {
             <input className={inputCls} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
           </div>
           <div>
-            <label className={labelCls}>Type</label>
-            <input className={inputCls} value={form.type} placeholder="e.g. SAC, DATASPHERE, BDC…" onChange={e => setForm(f => ({ ...f, type: e.target.value }))} />
+            <label className={labelCls}>Type *</label>
+            <select className={inputCls} value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
+              {SYSTEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={labelCls}>Landscape</label>
+            <select className={inputCls} value={form.landscape} onChange={e => setForm(f => ({ ...f, landscape: e.target.value }))}>
+              <option value="">— none —</option>
+              {LANDSCAPES.map(l => <option key={l} value={l}>{LANDSCAPE_LABELS[l]}</option>)}
+            </select>
           </div>
           <div>
             <label className={labelCls}>URL</label>
             <input className={inputCls} value={form.url} placeholder="https://…" onChange={e => setForm(f => ({ ...f, url: e.target.value }))} />
           </div>
-          <div>
+          <div className="col-span-2">
             <label className={labelCls}>Description</label>
             <input className={inputCls} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
           </div>
           <div className="flex items-center gap-2 pt-1">
-            <input type="checkbox" id="activeCheck" checked={form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} className="rounded" />
-            <label htmlFor="activeCheck" className="text-sm font-medium text-gray-700">Active</label>
-          </div>
-        </div>
-      )}
-    />
-  )
-}
-
-// ─── Solutions Tab ────────────────────────────────────────────────────────────
-function SolutionsTab({ onCount }) {
-  return (
-    <CrudTab
-      resource="solutions"
-      onCountChange={onCount}
-      columns={[
-        { key: 'NAME', label: 'Name', field: 'name' },
-        { key: 'AREA', label: 'Area', field: 'area' },
-        { key: 'DESCRIPTION', label: 'Description', field: 'description' },
-      ]}
-      emptyForm={{ name: '', area: '', description: '' }}
-      renderForm={(form, setForm) => (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className={labelCls}>Name *</label>
-            <input className={inputCls} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-          </div>
-          <div>
-            <label className={labelCls}>Area</label>
-            <input className={inputCls} value={form.area} placeholder="e.g. Analytics, Planning…" onChange={e => setForm(f => ({ ...f, area: e.target.value }))} />
-          </div>
-          <div className="col-span-2">
-            <label className={labelCls}>Description</label>
-            <input className={inputCls} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} />
+            <input type="checkbox" id="sysActiveCheck" checked={!!form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} className="rounded" />
+            <label htmlFor="sysActiveCheck" className="text-sm font-medium text-gray-700">Active</label>
           </div>
         </div>
       )}
@@ -270,100 +282,34 @@ function ClientsTab({ onCount }) {
   )
 }
 
-// ─── Objects Tab ──────────────────────────────────────────────────────────────
-function ObjectsTab({ onCount }) {
-  const [tenants, setTenants] = useState([])
-  const [solutions, setSolutions] = useState([])
-
-  useEffect(() => {
-    api.get('/tenants').then(r => setTenants(r.data || []))
-    api.get('/solutions').then(r => setSolutions(r.data || []))
-  }, [])
-
-  return (
-    <CrudTab
-      resource="objects"
-      onCountChange={onCount}
-      columns={[
-        { key: 'NAME', label: 'Name', field: 'name' },
-        { key: 'OBJECTTYPE', label: 'Type', field: 'objectType' },
-        { key: 'TENANT_NAME', label: 'Tenant', field: 'tenant_id', editKey: 'TENANT_ID' },
-        { key: 'SOLUTION_NAME', label: 'Solution', field: 'solution_id', editKey: 'SOLUTION_ID' },
-        { key: 'ACTIVE', label: 'Active', field: 'active', render: v => v ? <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Active</span> : <span className="text-xs font-semibold text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">Inactive</span> },
-      ]}
-      emptyForm={{ name: '', objectType: '', tenant_id: '', solution_id: '', path: '', description: '', active: true }}
-      renderForm={(form, setForm) => (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className={labelCls}>Name *</label>
-            <input className={inputCls} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
-          </div>
-          <div>
-            <label className={labelCls}>Type</label>
-            <input className={inputCls} value={form.objectType} placeholder="e.g. Story, Model…" onChange={e => setForm(f => ({ ...f, objectType: e.target.value }))} />
-          </div>
-          <div>
-            <label className={labelCls}>Tenant</label>
-            <select className={inputCls} value={form.tenant_id} onChange={e => setForm(f => ({ ...f, tenant_id: e.target.value }))}>
-              <option value="">— none —</option>
-              {tenants.map(t => <option key={t.ID} value={t.ID}>{t.NAME}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={labelCls}>Solution</label>
-            <select className={inputCls} value={form.solution_id} onChange={e => setForm(f => ({ ...f, solution_id: e.target.value }))}>
-              <option value="">— none —</option>
-              {solutions.map(s => <option key={s.ID} value={s.ID}>{s.NAME}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={labelCls}>Path</label>
-            <input className={inputCls} value={form.path} onChange={e => setForm(f => ({ ...f, path: e.target.value }))} />
-          </div>
-          <div className="flex items-center gap-2 pt-5">
-            <input type="checkbox" id="objActiveCheck" checked={form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} className="rounded" />
-            <label htmlFor="objActiveCheck" className="text-sm font-medium text-gray-700">Active</label>
-          </div>
-        </div>
-      )}
-    />
-  )
-}
-
 // ─── Tab Config ───────────────────────────────────────────────────────────────
 const TAB_CONFIG = [
-  { key: 'tenants', label: 'Tenants', icon: Server },
-  { key: 'solutions', label: 'Solutions', icon: Lightbulb },
+  { key: 'systems', label: 'Systems', icon: Server },
   { key: 'clients', label: 'Clients', icon: Users },
-  { key: 'objects', label: 'Objects', icon: Package },
 ]
+
+const ICON_CLASS = {
+  systems: 'bg-gradient-to-br from-blue-500 to-blue-700',
+  clients: 'bg-gradient-to-br from-emerald-400 to-emerald-600',
+}
 
 // ─── Master Data Page ─────────────────────────────────────────────────────────
 export default function MasterData() {
-  const [activeTab, setActiveTab] = useState('tenants')
-  const [counts, setCounts] = useState({ tenants: null, solutions: null, clients: null, objects: null })
+  const [activeTab, setActiveTab] = useState('systems')
+  const [counts, setCounts] = useState({ systems: null, clients: null })
 
   const setCount = (key) => (val) => setCounts(c => ({ ...c, [key]: val }))
 
-  const ICON_CLASS = {
-    tenants:   'bg-gradient-to-br from-blue-500 to-blue-700',
-    solutions: 'bg-gradient-to-br from-violet-500 to-violet-700',
-    clients:   'bg-gradient-to-br from-emerald-400 to-emerald-600',
-    objects:   'bg-gradient-to-br from-amber-400 to-amber-600',
-  }
-
   return (
     <div className="min-h-full">
-      {/* Header */}
       <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 px-6 pt-8 pb-20">
         <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1">Configuration</p>
         <h1 className="text-white text-3xl font-black tracking-tight">Master Data</h1>
-        <p className="text-slate-400 text-sm mt-1">Tenants, solutions, clients, and objects</p>
+        <p className="text-slate-400 text-sm mt-1">BTP systems and clients</p>
       </div>
 
       <div className="px-6 -mt-12 space-y-5 pb-6">
-        {/* Floating stat cards */}
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           {TAB_CONFIG.map(tab => {
             const Icon = tab.icon
             const count = counts[tab.key]
@@ -388,9 +334,7 @@ export default function MasterData() {
           })}
         </div>
 
-        {/* Main content card */}
         <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-gray-50 overflow-hidden">
-          {/* Tab bar */}
           <div className="flex border-b border-gray-100 px-2">
             {TAB_CONFIG.map(tab => {
               const Icon = tab.icon
@@ -411,11 +355,8 @@ export default function MasterData() {
             })}
           </div>
 
-          {/* Tab content */}
-          {activeTab === 'tenants' && <TenantsTab onCount={setCount('tenants')} />}
-          {activeTab === 'solutions' && <SolutionsTab onCount={setCount('solutions')} />}
+          {activeTab === 'systems' && <SystemsTab onCount={setCount('systems')} />}
           {activeTab === 'clients' && <ClientsTab onCount={setCount('clients')} />}
-          {activeTab === 'objects' && <ObjectsTab onCount={setCount('objects')} />}
         </div>
       </div>
     </div>
