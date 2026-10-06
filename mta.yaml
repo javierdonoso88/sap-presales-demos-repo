@@ -8,8 +8,8 @@ build-parameters:
     - builder: custom
       commands:
         - npm ci
-        - npx cds build --for hana
-        - npx cds build --for nodejs
+        - rm -f srv/csn.json
+        - npx cds build
         - cp gen/srv/srv/csn.json srv/csn.json
         - npm ci --prefix ui
         - npm run build --prefix ui
