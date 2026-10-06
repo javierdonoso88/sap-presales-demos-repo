@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
+import { Link, useParams, useNavigate, useLocation } from 'react-router-dom'
 import { Check } from 'lucide-react'
 import api from '../api/client'
 import Spinner from '../components/shared/Spinner'
@@ -392,6 +392,7 @@ function Step4Review({ formData }) {
 export default function DemoWizard() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const isEdit = Boolean(id)
 
   const [step, setStep] = useState(1)
@@ -405,6 +406,20 @@ export default function DemoWizard() {
   })
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState(null)
+
+  // Clone mode: pre-populate from passed demo
+  useEffect(() => {
+    const src = location.state?.cloneFrom
+    if (!src || id) return
+    setFormData({
+      title: `Clone of ${src.TITLE}`,
+      description: src.DESCRIPTION || '',
+      demoDate: '',
+      status: 'DRAFT',
+      systems: (src.systems || []).map(s => ({ id: s.SYSTEM_ID, notes: s.NOTES || '' })),
+      clients: [],
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!id) return

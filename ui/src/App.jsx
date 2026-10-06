@@ -5,6 +5,7 @@ import DemosList from './pages/DemosList'
 import DemoDetail from './pages/DemoDetail'
 import DemoWizard from './pages/DemoWizard'
 import MasterData from './pages/MasterData'
+import Timeline from './pages/Timeline'
 
 export default function App() {
   return (
@@ -17,6 +18,7 @@ export default function App() {
           <Route path="/demos/:id" element={<DemoDetail />} />
           <Route path="/demos/:id/edit" element={<DemoWizard />} />
           <Route path="/master-data" element={<MasterData />} />
+          <Route path="/timeline" element={<Timeline />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>

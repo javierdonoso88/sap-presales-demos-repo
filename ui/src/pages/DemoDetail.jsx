@@ -4,9 +4,11 @@ import { useDemo } from '../hooks/useDemos'
 import api from '../api/client'
 import StatusBadge from '../components/shared/StatusBadge'
 import Spinner from '../components/shared/Spinner'
+import Modal from '../components/shared/Modal'
 import {
   Pencil, Trash2, Download, Upload, X, FileText, File,
-  Image, ChevronRight, Paperclip, AlertCircle
+  Image, ChevronRight, Paperclip, AlertCircle, Copy,
+  ExternalLink, CheckCircle2, XCircle, ArrowRight
 } from 'lucide-react'
 
 const TABS = ['General', 'Systems', 'Clients', 'Attachments']
@@ -133,7 +135,6 @@ function AttachmentsTab({ demoId }) {
 
   return (
     <div className="space-y-4">
-      {/* Error */}
       {error && (
         <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm">
           <AlertCircle size={15} />
@@ -141,17 +142,13 @@ function AttachmentsTab({ demoId }) {
           <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-red-700"><X size={14} /></button>
         </div>
       )}
-
-      {/* Drop zone */}
       <div
         onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
         onClick={() => !uploading && fileInputRef.current?.click()}
         className={`rounded-2xl border-2 border-dashed flex flex-col items-center justify-center py-10 gap-3 cursor-pointer transition-all ${
-          dragOver
-            ? 'border-sap-blue bg-blue-50'
-            : 'border-gray-200 hover:border-sap-blue hover:bg-blue-50/30'
+          dragOver ? 'border-sap-blue bg-blue-50' : 'border-gray-200 hover:border-sap-blue hover:bg-blue-50/30'
         } ${uploading ? 'pointer-events-none opacity-75' : ''}`}
       >
         <input
@@ -169,10 +166,7 @@ function AttachmentsTab({ demoId }) {
             <div className="text-center">
               <p className="text-sm font-semibold text-sap-blue">Uploading… {uploadProgress}%</p>
               <div className="mt-2 w-48 h-2 bg-blue-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-sap-blue rounded-full transition-all duration-200"
-                  style={{ width: `${uploadProgress}%` }}
-                />
+                <div className="h-full bg-sap-blue rounded-full transition-all duration-200" style={{ width: `${uploadProgress}%` }} />
               </div>
             </div>
           </>
@@ -188,8 +182,6 @@ function AttachmentsTab({ demoId }) {
           </>
         )}
       </div>
-
-      {/* List */}
       {loading ? (
         <div className="flex justify-center py-8"><Spinner /></div>
       ) : attachments.length === 0 ? (
@@ -223,18 +215,10 @@ function AttachmentsTab({ demoId }) {
                   </p>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <button
-                    onClick={() => handleDownload(att)}
-                    title="Download"
-                    className="p-2 rounded-lg hover:bg-blue-100 text-gray-400 hover:text-sap-blue transition-colors"
-                  >
+                  <button onClick={() => handleDownload(att)} title="Download" className="p-2 rounded-lg hover:bg-blue-100 text-gray-400 hover:text-sap-blue transition-colors">
                     <Download size={14} />
                   </button>
-                  <button
-                    onClick={() => handleDelete(att)}
-                    title="Delete"
-                    className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
-                  >
+                  <button onClick={() => handleDelete(att)} title="Delete" className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors">
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -247,6 +231,90 @@ function AttachmentsTab({ demoId }) {
   )
 }
 
+// ─── Status Transition Modal ──────────────────────────────────────────────────
+
+function StatusModal({ open, onClose, demo, onSuccess }) {
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
+
+  const checks = [
+    { label: 'Tiene título',              ok: Boolean(demo?.TITLE) },
+    { label: 'Tiene fecha de demo',       ok: Boolean(demo?.DEMODATE) },
+    { label: 'Al menos un sistema',       ok: (demo?.systems?.length || 0) > 0 },
+    { label: 'Al menos una presentación', ok: (demo?.clients?.length || 0) > 0 },
+  ]
+  const allOk = checks.every(c => c.ok)
+
+  const handleMarkReady = async () => {
+    setSaving(true)
+    setError(null)
+    try {
+      await api.put(`/demos/${demo.ID}`, {
+        title: demo.TITLE,
+        description: demo.DESCRIPTION,
+        demoDate: demo.DEMODATE || null,
+        status: 'READY',
+        systems: (demo.systems || []).map(s => ({ id: s.SYSTEM_ID, notes: s.NOTES || '' })),
+        clients: (demo.clients || []).map(c => ({
+          clientId: c.CLIENT_ID,
+          presentationDate: c.PRESENTATIONDATE || null,
+          result: c.RESULT,
+          feedback: c.FEEDBACK || ''
+        }))
+      })
+      onClose()
+      onSuccess()
+    } catch (err) {
+      setError(err.error || 'Failed to update status')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <Modal
+      open={open}
+      onClose={onClose}
+      title="Mark as Ready"
+      footer={
+        <>
+          <button onClick={onClose} className="px-4 py-2 text-sm font-semibold rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 transition-colors">
+            Cancel
+          </button>
+          <button
+            onClick={handleMarkReady}
+            disabled={saving}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 transition-colors"
+          >
+            {saving ? 'Saving…' : <><ArrowRight size={14} /> Mark as Ready</>}
+          </button>
+        </>
+      }
+    >
+      <div className="space-y-3">
+        <p className="text-sm text-gray-500">Verifica que la demo está lista para presentar:</p>
+        <ul className="space-y-2">
+          {checks.map(c => (
+            <li key={c.label} className="flex items-center gap-2.5 text-sm">
+              {c.ok
+                ? <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" />
+                : <XCircle size={16} className="text-amber-400 flex-shrink-0" />
+              }
+              <span className={c.ok ? 'text-gray-700' : 'text-amber-600'}>{c.label}</span>
+            </li>
+          ))}
+        </ul>
+        {!allOk && (
+          <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-2">
+            Puedes marcarla como Ready aunque falten datos, pero se recomienda completarlos primero.
+          </p>
+        )}
+        {error && <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
+      </div>
+    </Modal>
+  )
+}
+
 // ─── Demo Detail ──────────────────────────────────────────────────────────────
 
 export default function DemoDetail() {
@@ -254,6 +322,7 @@ export default function DemoDetail() {
   const navigate = useNavigate()
   const { demo, loading, error } = useDemo(id)
   const [activeTab, setActiveTab] = useState('General')
+  const [showStatusModal, setShowStatusModal] = useState(false)
 
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this demo? This action cannot be undone.')) return
@@ -265,12 +334,12 @@ export default function DemoDetail() {
     }
   }
 
+  const handleClone = () => {
+    navigate('/demos/new', { state: { cloneFrom: demo } })
+  }
+
   if (loading) {
-    return (
-      <div className="flex items-center justify-center p-12">
-        <Spinner size="lg" />
-      </div>
-    )
+    return <div className="flex items-center justify-center p-12"><Spinner size="lg" /></div>
   }
 
   if (error || !demo) {
@@ -294,7 +363,18 @@ export default function DemoDetail() {
           <div>
             <h1 className="text-white text-2xl font-black tracking-tight leading-tight">{demo.TITLE}</h1>
             <div className="flex items-center gap-3 mt-3 flex-wrap">
-              <StatusBadge status={demo.STATUS} />
+              {demo.STATUS === 'DRAFT' ? (
+                <button
+                  onClick={() => setShowStatusModal(true)}
+                  className="group inline-flex items-center gap-1.5 transition-opacity hover:opacity-80"
+                  title="Click to mark as Ready"
+                >
+                  <StatusBadge status={demo.STATUS} />
+                  <ArrowRight size={12} className="text-amber-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </button>
+              ) : (
+                <StatusBadge status={demo.STATUS} />
+              )}
               {demo.DEMODATE && (
                 <span className="text-slate-400 text-xs font-semibold">📅 {demo.DEMODATE}</span>
               )}
@@ -304,6 +384,12 @@ export default function DemoDetail() {
             </div>
           </div>
           <div className="flex gap-2 flex-shrink-0">
+            <button
+              onClick={handleClone}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-colors"
+            >
+              <Copy size={13} /> Clone
+            </button>
             <Link
               to={`/demos/${id}/edit`}
               className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-semibold rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-colors"
@@ -323,16 +409,13 @@ export default function DemoDetail() {
       {/* Tabs + Content */}
       <div className="px-6 -mt-4">
         <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-gray-50 overflow-hidden">
-          {/* Tab bar */}
           <div className="flex border-b border-gray-100 px-2 overflow-x-auto">
             {TABS.map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex items-center gap-1.5 px-4 py-4 text-sm font-semibold whitespace-nowrap transition-colors border-b-2 -mb-px ${
-                  activeTab === tab
-                    ? 'border-sap-blue text-sap-blue'
-                    : 'border-transparent text-gray-500 hover:text-gray-800'
+                  activeTab === tab ? 'border-sap-blue text-sap-blue' : 'border-transparent text-gray-500 hover:text-gray-800'
                 }`}
               >
                 {tab === 'Attachments' && <Paperclip size={13} />}
@@ -375,9 +458,7 @@ export default function DemoDetail() {
               </div>
             )}
 
-            {activeTab === 'Systems' && (
-              <SystemsSection systems={demo.systems || []} />
-            )}
+            {activeTab === 'Systems' && <SystemsSection systems={demo.systems || []} />}
 
             {activeTab === 'Clients' && (
               <AssociationTable
@@ -397,9 +478,18 @@ export default function DemoDetail() {
           </div>
         </div>
       </div>
+
+      <StatusModal
+        open={showStatusModal}
+        onClose={() => setShowStatusModal(false)}
+        demo={demo}
+        onSuccess={() => navigate(0)}
+      />
     </div>
   )
 }
+
+// ─── Systems Section ──────────────────────────────────────────────────────────
 
 const TYPE_COLORS = {
   SAC:        'bg-teal-100 text-teal-700',
@@ -451,8 +541,13 @@ function SystemsSection({ systems }) {
               </td>
               <td className="px-4 py-3">
                 {sys.URL ? (
-                  <a href={sys.URL} target="_blank" rel="noreferrer" className="text-sap-blue hover:underline text-xs font-mono inline-flex items-center gap-1">
-                    Open ↗
+                  <a
+                    href={sys.URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-sap-blue bg-blue-50 hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors"
+                  >
+                    <ExternalLink size={11} /> Open
                   </a>
                 ) : '—'}
               </td>

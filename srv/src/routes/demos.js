@@ -45,7 +45,7 @@ async function getDemoById(id) {
 
 router.get('/', async (req, res, next) => {
   try {
-    const { status, search, system_type } = req.query;
+    const { status, search, system_type, landscape } = req.query;
     let sql = `
       SELECT d.ID, d.TITLE, d.DESCRIPTION, d.DEMODATE, d.STATUS,
              d.CREATEDAT, d.CREATEDBY, d.MODIFIEDAT, d.MODIFIEDBY,
@@ -55,10 +55,11 @@ router.get('/', async (req, res, next) => {
     const params = [];
     const conditions = [];
 
-    if (system_type) {
+    if (system_type || landscape) {
       sql += ` JOIN SAP_PRESALES_DEMOS_DEMOSYSTEMS ds ON ds.DEMO_ID = d.ID
-               JOIN SAP_PRESALES_DEMOS_SYSTEMS s ON s.ID = ds.SYSTEM_ID AND s.TYPE = ?`;
-      params.push(system_type);
+               JOIN SAP_PRESALES_DEMOS_SYSTEMS s ON s.ID = ds.SYSTEM_ID`;
+      if (system_type) { sql += ` AND s.TYPE = ?`; params.push(system_type); }
+      if (landscape)   { sql += ` AND s.LANDSCAPE = ?`; params.push(landscape); }
     }
 
     if (status) {

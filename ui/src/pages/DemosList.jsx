@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Search, CheckCircle, Edit3, Archive, Users, ChevronRight } from 'lucide-react'
+import { Plus, Search, CheckCircle, Edit3, Archive, Users, ChevronRight, Download } from 'lucide-react'
 import { useDemos } from '../hooks/useDemos'
 import Spinner from '../components/shared/Spinner'
 
@@ -10,6 +10,8 @@ const STATUS_PILL = {
   ARCHIVED: 'bg-amber-50 text-amber-700 border border-amber-200',
 }
 const STATUS_LABEL = { READY: 'Ready', DRAFT: 'Draft', ARCHIVED: 'Archived' }
+
+const LANDSCAPE_LABELS = { BDC_GA: 'BDC GA', GLA26Q2: 'GLA26Q2', SANDBOX: 'Sandbox', EXTERNAL: 'External' }
 
 function StatCard({ label, value, icon: Icon, iconClass, dimmed }) {
   return (
@@ -25,15 +27,34 @@ function StatCard({ label, value, icon: Icon, iconClass, dimmed }) {
   )
 }
 
+function exportCSV(demos) {
+  const headers = ['Title', 'Date', 'Status', 'Created By', 'Presentations']
+  const rows = demos.map(d => [
+    `"${(d.TITLE || '').replace(/"/g, '""')}"`,
+    d.DEMODATE || '',
+    d.STATUS || '',
+    d.CREATEDBY ? d.CREATEDBY.split('@')[0] : '',
+    d.clientCount || 0,
+  ])
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n')
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = `demos-export-${new Date().toISOString().split('T')[0]}.csv`
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
 export default function DemosList() {
-  const [filters, setFilters] = useState({ status: '', search: '', systemType: '' })
+  const [filters, setFilters] = useState({ status: '', search: '', systemType: '', landscape: '' })
   const { demos, loading, error } = useDemos(filters)
 
   const ready = demos.filter(d => d.STATUS === 'READY').length
   const draft = demos.filter(d => d.STATUS === 'DRAFT').length
   const archived = demos.filter(d => d.STATUS === 'ARCHIVED').length
   const totalClients = demos.reduce((sum, d) => sum + (d.clientCount || 0), 0)
-  const hasFilters = filters.status || filters.search || filters.systemType
+  const hasFilters = filters.status || filters.search || filters.systemType || filters.landscape
 
   return (
     <div className="min-h-full">
@@ -96,12 +117,29 @@ export default function DemosList() {
             <option value="S4HANA">S/4HANA</option>
             <option value="BW4HANA">BW/4HANA</option>
           </select>
+          <select
+            className="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sap-blue text-gray-700"
+            onChange={e => setFilters(f => ({ ...f, landscape: e.target.value }))}
+          >
+            <option value="">All landscapes</option>
+            {Object.entries(LANDSCAPE_LABELS).map(([k, v]) => (
+              <option key={k} value={k}>{v}</option>
+            ))}
+          </select>
           {hasFilters && (
             <button
-              onClick={() => setFilters({ status: '', search: '', systemType: '' })}
+              onClick={() => setFilters({ status: '', search: '', systemType: '', landscape: '' })}
               className="text-xs font-semibold text-gray-400 hover:text-gray-700 transition-colors"
             >
               Clear ✕
+            </button>
+          )}
+          {demos.length > 0 && !loading && (
+            <button
+              onClick={() => exportCSV(demos)}
+              className="ml-auto inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 transition-colors flex-shrink-0"
+            >
+              <Download size={13} /> Export CSV
             </button>
           )}
         </div>
