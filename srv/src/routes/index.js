@@ -10,5 +10,6 @@ router.use('/share', require('./share'));
 router.use('/systems', require('./systems'));
 router.use('/clients', require('./clients'));
 router.use('/dashboard', require('./dashboard'));
+router.use('/admin', require('./admin'));
 
 module.exports = router;
