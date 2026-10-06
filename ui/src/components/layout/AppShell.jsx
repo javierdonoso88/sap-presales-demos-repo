@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { LayoutDashboard, BookOpen, Database, CalendarDays, Search } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Database, CalendarDays, Search, Columns } from 'lucide-react'
 import CommandPalette from '../shared/CommandPalette'
 
 const navItems = [
   { to: '/', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/demos', icon: BookOpen, label: 'Demos' },
   { to: '/timeline', icon: CalendarDays, label: 'Timeline' },
+  { to: '/kanban', icon: Columns, label: 'Kanban' },
   { to: '/master-data', icon: Database, label: 'Master Data' },
 ]
 

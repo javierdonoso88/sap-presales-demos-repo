@@ -5,11 +5,8 @@ const { query } = require('../config/db');
 
 const router = Router();
 
-// ─── GET /dashboard/stats ─────────────────────────────────────────────────────
-
 router.get('/stats', async (req, res, next) => {
   try {
-    // Totals by status
     const totalsRows = await query(`
       SELECT
         COUNT(*) AS TOTAL,
@@ -22,14 +19,12 @@ router.get('/stats', async (req, res, next) => {
 
     const totals = totalsRows[0] || { TOTAL: 0, DRAFT: 0, READY: 0, ARCHIVED: 0, THIS_MONTH: 0 };
 
-    // By status array
     const byStatus = [
       { status: 'DRAFT', count: Number(totals.DRAFT) },
       { status: 'READY', count: Number(totals.READY) },
       { status: 'ARCHIVED', count: Number(totals.ARCHIVED) }
     ];
 
-    // By system type
     const bySystemTypeRows = await query(`
       SELECT s.TYPE AS type, COUNT(DISTINCT ds.DEMO_ID) AS CNT
       FROM SAP_PRESALES_DEMOS_DEMOSYSTEMS ds
@@ -37,10 +32,8 @@ router.get('/stats', async (req, res, next) => {
       GROUP BY s.TYPE
       ORDER BY CNT DESC
     `);
-
     const bySystemType = bySystemTypeRows.map(r => ({ type: r.type, count: Number(r.CNT) }));
 
-    // By month (last 6 months)
     const byMonthRows = await query(`
       SELECT TO_CHAR(CREATEDAT, 'YYYY-MM') AS MONTH, COUNT(*) AS CNT
       FROM SAP_PRESALES_DEMOS_DEMOS
@@ -48,18 +41,34 @@ router.get('/stats', async (req, res, next) => {
       GROUP BY TO_CHAR(CREATEDAT, 'YYYY-MM')
       ORDER BY MONTH
     `);
-
     const byMonth = byMonthRows.map(r => ({ month: r.MONTH, count: Number(r.CNT) }));
 
-    // Recent demos (last 5)
     const recentRows = await query(`
       SELECT TOP 5 d.ID, d.TITLE, d.STATUS, d.DEMODATE, d.CREATEDAT, d.CREATEDBY,
         (SELECT COUNT(*) FROM SAP_PRESALES_DEMOS_DEMOCLIENTS WHERE DEMO_ID = d.ID) AS CLIENT_COUNT
       FROM SAP_PRESALES_DEMOS_DEMOS d
       ORDER BY d.CREATEDAT DESC
     `);
-
     const recentDemos = recentRows.map(r => ({ ...r, CLIENT_COUNT: Number(r.CLIENT_COUNT) }));
+
+    // Activity: last 10 modified demos
+    const activityRows = await query(`
+      SELECT TOP 10 ID, TITLE, STATUS, MODIFIEDAT, MODIFIEDBY, CREATEDAT, CREATEDBY
+      FROM SAP_PRESALES_DEMOS_DEMOS
+      ORDER BY MODIFIEDAT DESC
+    `);
+
+    // Top users by demo count
+    const byUserRows = await query(`
+      SELECT CREATEDBY, COUNT(*) AS CNT
+      FROM SAP_PRESALES_DEMOS_DEMOS
+      GROUP BY CREATEDBY
+      ORDER BY CNT DESC
+    `);
+    const byUser = byUserRows.map(r => ({
+      user: r.CREATEDBY ? r.CREATEDBY.split('@')[0] : 'unknown',
+      count: Number(r.CNT)
+    }));
 
     res.json({
       data: {
@@ -70,10 +79,9 @@ router.get('/stats', async (req, res, next) => {
           archived: Number(totals.ARCHIVED),
           thisMonth: Number(totals.THIS_MONTH)
         },
-        byStatus,
-        bySystemType,
-        byMonth,
-        recentDemos
+        byStatus, bySystemType, byMonth, recentDemos,
+        activity: activityRows,
+        byUser,
       }
     });
   } catch (err) {

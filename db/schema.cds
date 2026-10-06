@@ -59,6 +59,7 @@ entity Demos : cuid, managed {
     description : String(3000)                   @title: 'Descripción';
     demoDate    : Date                           @title: 'Fecha demo';
     status      : DemoStatus default 'DRAFT'    @title: 'Estado';
+    tags        : String(500)                   @title: 'Tags';
     systems     : Composition of many DemoSystems on systems.demo = $self;
     clients     : Composition of many DemoClients on clients.demo = $self;
 }
@@ -85,4 +86,23 @@ entity DemoAttachments : cuid, managed {
     contentType : String(100);
     size        : Integer64;
     objectKey   : String(500);
+}
+
+// ─── History & Share ──────────────────────────────────────────────────────────
+
+entity DemoHistory : cuid {
+    demo      : Association to Demos @mandatory;
+    changedAt : DateTime;
+    changedBy : String(255);
+    field     : String(100);
+    oldValue  : String(2000);
+    newValue  : String(2000);
+}
+
+entity ShareTokens {
+    key token  : UUID;
+    demo       : Association to Demos @mandatory;
+    createdAt  : DateTime;
+    createdBy  : String(255);
+    expiresAt  : DateTime;
 }

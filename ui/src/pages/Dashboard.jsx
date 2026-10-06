@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { BookOpen, CheckCircle, Edit3, Calendar, Plus, ChevronRight, Users } from 'lucide-react'
+import { BookOpen, CheckCircle, Edit3, Calendar, Plus, ChevronRight, Users, Activity } from 'lucide-react'
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
@@ -7,6 +7,7 @@ import {
 } from 'recharts'
 import { useDashboard } from '../hooks/useDashboard'
 import Spinner from '../components/shared/Spinner'
+import StatusBadge from '../components/shared/StatusBadge'
 
 const STATUS_COLORS = { DRAFT: '#94a3b8', READY: '#10b981', ARCHIVED: '#f59e0b' }
 const STATUS_LABEL = { DRAFT: 'Draft', READY: 'Ready', ARCHIVED: 'Archived' }
@@ -38,6 +39,49 @@ const CustomTooltip = ({ active, payload, label }) => {
           <span className="font-bold text-gray-900">{p.value}</span> demos
         </p>
       ))}
+    </div>
+  )
+}
+
+// ─── Activity Feed ────────────────────────────────────────────────────────────
+function ActivityFeed({ items = [] }) {
+  const timeAgo = (dt) => {
+    if (!dt) return '—'
+    const diff = Date.now() - new Date(dt).getTime()
+    const mins = Math.floor(diff / 60000)
+    if (mins < 60) return `${mins}m ago`
+    const hrs = Math.floor(mins / 60)
+    if (hrs < 24) return `${hrs}h ago`
+    return `${Math.floor(hrs / 24)}d ago`
+  }
+  return (
+    <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-gray-50 overflow-hidden">
+      <div className="px-5 py-4 border-b border-gray-50 flex items-center gap-2">
+        <Activity size={14} className="text-gray-400" />
+        <h2 className="text-sm font-bold text-gray-900">Recent Activity</h2>
+        <span className="text-xs font-bold bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full ml-1">{items.length}</span>
+      </div>
+      {items.length === 0 ? (
+        <div className="px-5 py-8 text-center text-sm text-gray-400">No recent activity</div>
+      ) : (
+        <ul className="divide-y divide-gray-50">
+          {items.map(item => (
+            <li key={item.ID} className="flex items-center gap-3 px-5 py-3 hover:bg-blue-50/30 transition-colors">
+              <div className="w-2 h-2 rounded-full bg-sap-blue/40 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <Link to={`/demos/${item.ID}`} className="text-sm font-semibold text-gray-800 hover:text-sap-blue transition-colors truncate block">{item.TITLE}</Link>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {item.MODIFIEDBY ? item.MODIFIEDBY.split('@')[0] : item.CREATEDBY?.split('@')[0]}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <StatusBadge status={item.STATUS} />
+                <span className="text-xs text-gray-400">{timeAgo(item.MODIFIEDAT || item.CREATEDAT)}</span>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   )
 }
@@ -142,6 +186,8 @@ export default function Dashboard() {
   const bySystemType = data?.bySystemType || []
   const byMonth = data?.byMonth || []
   const recentDemos = data?.recentDemos || []
+  const activity = data?.activity || []
+  const byUser = data?.byUser || []
 
   const byStatusForChart = byStatus.filter(s => s.count > 0)
 
@@ -316,6 +362,35 @@ export default function Dashboard() {
               No demos created in the last 6 months
             </div>
           )}
+        </div>
+
+        {/* ── Activity + Top Users ── */}
+        <div className="grid grid-cols-2 gap-5">
+          <ActivityFeed items={activity} />
+          <div className="bg-white rounded-2xl p-5 shadow-xl shadow-slate-200/60 border border-gray-50">
+            <div className="flex items-center gap-2 mb-4">
+              <Users size={14} className="text-gray-400" />
+              <h2 className="text-sm font-bold text-gray-900">Top Contributors</h2>
+            </div>
+            {byUser.length > 0 ? (
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={byUser.slice(0, 8)} layout="vertical" margin={{ top: 0, right: 15, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="userBarGrad" x1="0" y1="0" x2="1" y2="0">
+                      <stop offset="0%" stopColor="#0070f2" stopOpacity={1} />
+                      <stop offset="100%" stopColor="#0040b0" stopOpacity={0.8} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis type="number" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} allowDecimals={false} />
+                  <YAxis type="category" dataKey="user" tick={{ fontSize: 11, fill: '#64748b', fontWeight: 600 }} axisLine={false} tickLine={false} width={80} />
+                  <Tooltip formatter={(v) => [`${v} demos`, 'Count']} contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #f1f5f9' }} />
+                  <Bar dataKey="count" fill="url(#userBarGrad)" radius={[0, 6, 6, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-48 text-sm text-gray-400">No data yet</div>
+            )}
+          </div>
         </div>
 
         {/* ── Recent Demos ── */}

@@ -1,7 +1,12 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import api from '../api/client'
 import Spinner from '../components/shared/Spinner'
-import { Server, Users, Plus, ExternalLink } from 'lucide-react'
+import Modal from '../components/shared/Modal'
+import { Server, Users, Plus, ExternalLink, BarChart2, ChevronRight } from 'lucide-react'
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
+} from 'recharts'
 
 const inputCls = 'w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sap-blue focus:border-transparent'
 const labelCls = 'block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wide'
@@ -24,6 +29,8 @@ const TYPE_COLORS = {
   BW4HANA:    'bg-orange-100 text-orange-700',
   OTHER:      'bg-gray-100 text-gray-600',
 }
+
+const RESULT_COLORS = ['#10b981', '#0070f2', '#f59e0b', '#ef4444', '#8b5cf6', '#94a3b8']
 
 // ─── Generic CRUD Tab ─────────────────────────────────────────────────────────
 function CrudTab({ resource, columns, emptyForm, renderForm, onCountChange }) {
@@ -241,44 +248,213 @@ function SystemsTab({ onCount }) {
   )
 }
 
+// ─── Client Stats Modal ───────────────────────────────────────────────────────
+function ClientStatsModal({ client, open, onClose }) {
+  const [stats, setStats] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!open || !client) return
+    setLoading(true)
+    api.get(`/clients/${client.ID}/stats`)
+      .then(res => setStats(res.data))
+      .catch(() => setStats(null))
+      .finally(() => setLoading(false))
+  }, [open, client])
+
+  const STATUS_PILL = {
+    READY: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    DRAFT: 'bg-slate-100 text-slate-600 border-slate-200',
+    ARCHIVED: 'bg-amber-50 text-amber-700 border-amber-200',
+  }
+
+  return (
+    <Modal open={open} onClose={onClose} title={`Analytics — ${client?.NAME}`}>
+      {loading ? (
+        <div className="flex justify-center py-10"><Spinner /></div>
+      ) : !stats ? (
+        <p className="text-sm text-gray-400 text-center py-8">No stats available.</p>
+      ) : (
+        <div className="space-y-6">
+          {/* Result distribution */}
+          <div>
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Result Distribution</h3>
+            {stats.byResult.length > 0 ? (
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={stats.byResult} margin={{ top: 0, right: 10, left: -25, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+                  <XAxis dataKey="result" tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
+                  <Tooltip formatter={(v) => [v, 'Demos']} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+                  <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                    {stats.byResult.map((_, i) => (
+                      <Cell key={i} fill={RESULT_COLORS[i % RESULT_COLORS.length]} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-sm text-gray-400 text-center py-4">No presentations recorded.</p>
+            )}
+          </div>
+          {/* Linked demos */}
+          {stats.demos.length > 0 && (
+            <div>
+              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Linked Demos ({stats.demos.length})</h3>
+              <div className="rounded-xl border border-gray-100 overflow-hidden">
+                <table className="w-full">
+                  <thead><tr className="bg-gray-50 border-b border-gray-100">
+                    {['Demo', 'Status', 'Presentation Date', 'Result'].map(h =>
+                      <th key={h} className="px-4 py-2.5 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">{h}</th>
+                    )}
+                  </tr></thead>
+                  <tbody>
+                    {stats.demos.map((d, i) => (
+                      <tr key={i} className="border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
+                        <td className="px-4 py-3">
+                          <Link to={`/demos/${d.ID}`} onClick={onClose} className="text-sm font-semibold text-sap-blue hover:underline flex items-center gap-1">
+                            {d.TITLE} <ChevronRight size={12} />
+                          </Link>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`text-xs font-semibold px-2 py-0.5 rounded-full border ${STATUS_PILL[d.STATUS] || STATUS_PILL.DRAFT}`}>{d.STATUS}</span>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-500">{d.PRESENTATIONDATE || '—'}</td>
+                        <td className="px-4 py-3 text-sm text-gray-500">{d.RESULT || '—'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </Modal>
+  )
+}
+
 // ─── Clients Tab ──────────────────────────────────────────────────────────────
 function ClientsTab({ onCount }) {
+  const [clients, setClients] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [showAdd, setShowAdd] = useState(false)
+  const [form, setForm] = useState({ name: '', industry: '', country: '', contact: '', email: '' })
+  const [editId, setEditId] = useState(null)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
+  const [statsClient, setStatsClient] = useState(null)
+
+  const load = () => {
+    setLoading(true)
+    api.get('/clients')
+      .then(res => {
+        const data = res.data || []
+        setClients(data)
+        onCount?.(data.length)
+      })
+      .catch(err => setError(err.error || 'Failed to load'))
+      .finally(() => setLoading(false))
+  }
+
+  useEffect(() => { load() }, [])
+
+  const handleSave = async () => {
+    setSaving(true); setError(null)
+    try {
+      if (editId) await api.put(`/clients/${editId}`, form)
+      else await api.post('/clients', form)
+      setForm({ name: '', industry: '', country: '', contact: '', email: '' })
+      setShowAdd(false); setEditId(null); load()
+    } catch (err) { setError(err.error || 'Save failed') }
+    finally { setSaving(false) }
+  }
+
+  const handleEdit = (item) => {
+    setForm({ name: item.NAME || '', industry: item.INDUSTRY || '', country: item.COUNTRY || '', contact: item.CONTACT || '', email: item.EMAIL || '' })
+    setEditId(item.ID); setShowAdd(true)
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this client?')) return
+    try {
+      await api.delete(`/clients/${id}`)
+      load()
+    } catch (err) { setError(err.error || 'Delete failed. The client may be referenced by demos.') }
+  }
+
   return (
-    <CrudTab
-      resource="clients"
-      onCountChange={onCount}
-      columns={[
-        { key: 'NAME', label: 'Name', field: 'name' },
-        { key: 'INDUSTRY', label: 'Industry', field: 'industry' },
-        { key: 'COUNTRY', label: 'Country', field: 'country' },
-        { key: 'EMAIL', label: 'Contact Email', field: 'email' },
-      ]}
-      emptyForm={{ name: '', industry: '', country: '', contact: '', email: '' }}
-      renderForm={(form, setForm) => (
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className={labelCls}>Name *</label>
-            <input className={inputCls} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} />
+    <div>
+      {error && (
+        <div className="mx-5 mt-4 bg-red-50 border border-red-200 rounded-xl p-3 text-red-700 text-sm">{error}</div>
+      )}
+      {showAdd && (
+        <div className="m-5 p-5 border-2 border-blue-100 rounded-2xl bg-blue-50/50">
+          <h3 className="text-sm font-bold text-gray-800 mb-4">{editId ? 'Edit client' : 'Add new client'}</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <div><label className={labelCls}>Name *</label><input className={inputCls} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
+            <div><label className={labelCls}>Industry</label><input className={inputCls} value={form.industry} onChange={e => setForm(f => ({ ...f, industry: e.target.value }))} /></div>
+            <div><label className={labelCls}>Country</label><input className={inputCls} value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} /></div>
+            <div><label className={labelCls}>Contact</label><input className={inputCls} value={form.contact} onChange={e => setForm(f => ({ ...f, contact: e.target.value }))} /></div>
+            <div className="col-span-2"><label className={labelCls}>Email</label><input type="email" className={inputCls} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
           </div>
-          <div>
-            <label className={labelCls}>Industry</label>
-            <input className={inputCls} value={form.industry} onChange={e => setForm(f => ({ ...f, industry: e.target.value }))} />
-          </div>
-          <div>
-            <label className={labelCls}>Country</label>
-            <input className={inputCls} value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} />
-          </div>
-          <div>
-            <label className={labelCls}>Contact</label>
-            <input className={inputCls} value={form.contact} onChange={e => setForm(f => ({ ...f, contact: e.target.value }))} />
-          </div>
-          <div className="col-span-2">
-            <label className={labelCls}>Email</label>
-            <input type="email" className={inputCls} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
+          <div className="flex gap-2 mt-4">
+            <button onClick={handleSave} disabled={saving} className="px-4 py-2 text-sm font-semibold rounded-xl bg-sap-blue text-white hover:bg-sap-blue-dark disabled:opacity-50 transition-colors">{saving ? 'Saving…' : 'Save'}</button>
+            <button onClick={() => { setForm({ name: '', industry: '', country: '', contact: '', email: '' }); setShowAdd(false); setEditId(null); setError(null) }} className="px-4 py-2 text-sm font-semibold rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-600 transition-colors">Cancel</button>
           </div>
         </div>
       )}
-    />
+      {loading ? (
+        <div className="flex justify-center p-8"><Spinner /></div>
+      ) : (
+        <table className="w-full">
+          <thead>
+            <tr className="border-b-2 border-gray-50">
+              {['Name', 'Industry', 'Country', 'Email', 'Demos', 'Last Presentation'].map(h =>
+                <th key={h} className="px-5 py-3 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">{h}</th>
+              )}
+              <th className="px-5 py-3 text-right">
+                {!showAdd && (
+                  <button onClick={() => { setForm({ name: '', industry: '', country: '', contact: '', email: '' }); setShowAdd(true); setEditId(null) }}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-sap-blue text-white hover:bg-sap-blue-dark transition-colors">
+                    <Plus size={11} /> Add
+                  </button>
+                )}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {clients.map(item => (
+              <tr key={item.ID} className="group border-b border-gray-50 last:border-0 hover:bg-blue-50/30 transition-colors">
+                <td className="px-5 py-3.5 text-sm font-semibold text-gray-800">{item.NAME}</td>
+                <td className="px-5 py-3.5 text-sm text-gray-600">{item.INDUSTRY || '—'}</td>
+                <td className="px-5 py-3.5 text-sm text-gray-600">{item.COUNTRY || '—'}</td>
+                <td className="px-5 py-3.5 text-sm text-gray-600">{item.EMAIL || '—'}</td>
+                <td className="px-5 py-3.5">
+                  {item.demoCount > 0 ? (
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-200 px-2 py-0.5 rounded-full">
+                      {item.demoCount}
+                    </span>
+                  ) : <span className="text-xs text-gray-300">—</span>}
+                </td>
+                <td className="px-5 py-3.5 text-sm text-gray-500">{item.LAST_PRESENTATION || '—'}</td>
+                <td className="px-5 py-3.5 text-right">
+                  <button onClick={() => setStatsClient(item)} title="Analytics" className="text-xs font-semibold text-violet-600 hover:underline mr-3 inline-flex items-center gap-1">
+                    <BarChart2 size={12} /> Stats
+                  </button>
+                  <button onClick={() => handleEdit(item)} className="text-xs font-semibold text-sap-blue hover:underline mr-3">Edit</button>
+                  <button onClick={() => handleDelete(item.ID)} className="text-xs font-semibold text-red-500 hover:underline">Delete</button>
+                </td>
+              </tr>
+            ))}
+            {clients.length === 0 && (
+              <tr><td colSpan={7} className="px-5 py-10 text-center text-sm text-gray-400">No clients yet. Click "+ Add" to create one.</td></tr>
+            )}
+          </tbody>
+        </table>
+      )}
+      <ClientStatsModal client={statsClient} open={!!statsClient} onClose={() => setStatsClient(null)} />
+    </div>
   )
 }
 

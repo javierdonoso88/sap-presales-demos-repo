@@ -14,12 +14,48 @@ function getUserEmail(user) {
 
 router.get('/', async (req, res, next) => {
   try {
-    const rows = await query(
-      `SELECT ID, NAME, INDUSTRY, COUNTRY, CONTACT, EMAIL, CREATEDAT, CREATEDBY, MODIFIEDAT, MODIFIEDBY
-       FROM SAP_PRESALES_DEMOS_CLIENTS
-       ORDER BY NAME`
-    );
-    res.json({ data: rows });
+    const rows = await query(`
+      SELECT c.ID, c.NAME, c.INDUSTRY, c.COUNTRY, c.CONTACT, c.EMAIL,
+             c.CREATEDAT, c.CREATEDBY, c.MODIFIEDAT, c.MODIFIEDBY,
+             (SELECT COUNT(*) FROM SAP_PRESALES_DEMOS_DEMOCLIENTS WHERE CLIENT_ID = c.ID) AS DEMO_COUNT,
+             (SELECT MAX(PRESENTATIONDATE) FROM SAP_PRESALES_DEMOS_DEMOCLIENTS WHERE CLIENT_ID = c.ID) AS LAST_PRESENTATION
+      FROM SAP_PRESALES_DEMOS_CLIENTS c
+      ORDER BY c.NAME
+    `);
+    res.json({ data: rows.map(r => ({ ...r, demoCount: Number(r.DEMO_COUNT) })) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─── GET /clients/:id/stats ───────────────────────────────────────────────────
+
+router.get('/:id/stats', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const byResult = await query(`
+      SELECT RESULT, COUNT(*) AS CNT
+      FROM SAP_PRESALES_DEMOS_DEMOCLIENTS
+      WHERE CLIENT_ID = ?
+      GROUP BY RESULT
+      ORDER BY CNT DESC
+    `, [id]);
+
+    const demos = await query(`
+      SELECT d.ID, d.TITLE, d.STATUS, d.DEMODATE, dc.PRESENTATIONDATE, dc.RESULT, dc.FEEDBACK
+      FROM SAP_PRESALES_DEMOS_DEMOCLIENTS dc
+      JOIN SAP_PRESALES_DEMOS_DEMOS d ON d.ID = dc.DEMO_ID
+      WHERE dc.CLIENT_ID = ?
+      ORDER BY dc.PRESENTATIONDATE DESC NULLS LAST
+    `, [id]);
+
+    res.json({
+      data: {
+        byResult: byResult.map(r => ({ result: r.RESULT, count: Number(r.CNT) })),
+        demos,
+      }
+    });
   } catch (err) {
     next(err);
   }
@@ -77,15 +113,12 @@ router.put('/:id', async (req, res, next) => {
 router.delete('/:id', async (req, res, next) => {
   try {
     const { id } = req.params;
-
     const refs = await query(
-      `SELECT COUNT(*) AS CNT FROM SAP_PRESALES_DEMOS_DEMOCLIENTS WHERE CLIENT_ID = ?`,
-      [id]
+      `SELECT COUNT(*) AS CNT FROM SAP_PRESALES_DEMOS_DEMOCLIENTS WHERE CLIENT_ID = ?`, [id]
     );
     if (Number(refs[0].CNT) > 0) {
       return res.status(409).json({ error: 'Client is referenced by one or more demos and cannot be deleted.' });
     }
-
     await query(`DELETE FROM SAP_PRESALES_DEMOS_CLIENTS WHERE ID = ?`, [id]);
     res.status(204).send();
   } catch (err) {

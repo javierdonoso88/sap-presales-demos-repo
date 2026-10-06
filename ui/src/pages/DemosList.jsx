@@ -1,8 +1,10 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Plus, Search, CheckCircle, Edit3, Archive, Users, ChevronRight, Download } from 'lucide-react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Plus, Search, CheckCircle, Edit3, Archive, Users, ChevronRight, Download, Trash2, X, Keyboard } from 'lucide-react'
 import { useDemos } from '../hooks/useDemos'
+import api from '../api/client'
 import Spinner from '../components/shared/Spinner'
+import CompletenessBar from '../components/shared/CompletenessBar'
 
 const STATUS_PILL = {
   READY: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
@@ -28,11 +30,12 @@ function StatCard({ label, value, icon: Icon, iconClass, dimmed }) {
 }
 
 function exportCSV(demos) {
-  const headers = ['Title', 'Date', 'Status', 'Created By', 'Presentations']
+  const headers = ['Title', 'Date', 'Status', 'Completeness', 'Created By', 'Presentations']
   const rows = demos.map(d => [
     `"${(d.TITLE || '').replace(/"/g, '""')}"`,
     d.DEMODATE || '',
     d.STATUS || '',
+    d.completeness ?? 0,
     d.CREATEDBY ? d.CREATEDBY.split('@')[0] : '',
     d.clientCount || 0,
   ])
@@ -47,14 +50,77 @@ function exportCSV(demos) {
 }
 
 export default function DemosList() {
+  const navigate = useNavigate()
   const [filters, setFilters] = useState({ status: '', search: '', systemType: '', landscape: '' })
-  const { demos, loading, error } = useDemos(filters)
+  const { demos, loading, error, reload } = useDemos(filters)
+  const [selected, setSelected] = useState(new Set())
+  const [focusedIdx, setFocusedIdx] = useState(-1)
+  const [bulkLoading, setBulkLoading] = useState(false)
+  const [bulkError, setBulkError] = useState(null)
+  const tableRef = useRef(null)
 
   const ready = demos.filter(d => d.STATUS === 'READY').length
   const draft = demos.filter(d => d.STATUS === 'DRAFT').length
   const archived = demos.filter(d => d.STATUS === 'ARCHIVED').length
   const totalClients = demos.reduce((sum, d) => sum + (d.clientCount || 0), 0)
   const hasFilters = filters.status || filters.search || filters.systemType || filters.landscape
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return
+      if (e.key === 'j' || e.key === 'ArrowDown') {
+        e.preventDefault()
+        setFocusedIdx(i => Math.min(i + 1, demos.length - 1))
+      } else if (e.key === 'k' || e.key === 'ArrowUp') {
+        e.preventDefault()
+        setFocusedIdx(i => Math.max(i - 1, 0))
+      } else if (e.key === 'Enter' && focusedIdx >= 0 && demos[focusedIdx]) {
+        navigate(`/demos/${demos[focusedIdx].ID}`)
+      } else if (e.key === 'e' && focusedIdx >= 0 && demos[focusedIdx]) {
+        navigate(`/demos/${demos[focusedIdx].ID}/edit`)
+      } else if (e.key === 'x' && focusedIdx >= 0 && demos[focusedIdx]) {
+        const id = demos[focusedIdx].ID
+        setSelected(prev => {
+          const next = new Set(prev)
+          next.has(id) ? next.delete(id) : next.add(id)
+          return next
+        })
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [demos, focusedIdx, navigate])
+
+  // Reset focus when demos change
+  useEffect(() => { setFocusedIdx(-1) }, [filters])
+
+  const toggleSelect = useCallback((id) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }, [])
+
+  const toggleAll = useCallback(() => {
+    if (selected.size === demos.length) {
+      setSelected(new Set())
+    } else {
+      setSelected(new Set(demos.map(d => d.ID)))
+    }
+  }, [selected.size, demos])
+
+  const handleBulkAction = async (action) => {
+    if (!window.confirm(`${action === 'delete' ? 'Delete' : 'Archive'} ${selected.size} demo(s)? This cannot be undone.`)) return
+    setBulkLoading(true); setBulkError(null)
+    try {
+      await api.post('/demos/bulk', { ids: [...selected], action })
+      setSelected(new Set())
+      reload()
+    } catch (err) { setBulkError(err.error || `Bulk ${action} failed`) }
+    finally { setBulkLoading(false) }
+  }
 
   return (
     <div className="min-h-full">
@@ -66,12 +132,18 @@ export default function DemosList() {
             <h1 className="text-white text-3xl font-black tracking-tight">Demos</h1>
             <p className="text-slate-400 text-sm mt-1">All presales demo records</p>
           </div>
-          <Link
-            to="/demos/new"
-            className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors border border-white/15"
-          >
-            <Plus size={15} /> New Demo
-          </Link>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 text-blue-400/60 text-xs">
+              <Keyboard size={12} />
+              <span>j/k navigate · Enter open · e edit · x select</span>
+            </div>
+            <Link
+              to="/demos/new"
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-colors border border-white/15"
+            >
+              <Plus size={15} /> New Demo
+            </Link>
+          </div>
         </div>
       </div>
 
@@ -92,7 +164,7 @@ export default function DemosList() {
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Search demos…"
+              placeholder="Search title, description, tags…"
               className="w-full pl-8 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sap-blue focus:border-transparent"
               onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
             />
@@ -144,6 +216,31 @@ export default function DemosList() {
           )}
         </div>
 
+        {/* Bulk action bar */}
+        {selected.size > 0 && (
+          <div className="bg-sap-blue rounded-2xl px-5 py-3 flex items-center gap-4 shadow-xl shadow-blue-900/30">
+            <span className="text-white text-sm font-semibold">{selected.size} selected</span>
+            <button onClick={() => setSelected(new Set())} className="text-blue-200 hover:text-white transition-colors"><X size={14} /></button>
+            <div className="ml-auto flex items-center gap-2">
+              {bulkError && <span className="text-red-300 text-xs">{bulkError}</span>}
+              <button
+                onClick={() => handleBulkAction('archive')}
+                disabled={bulkLoading}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-lg bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-colors disabled:opacity-50"
+              >
+                <Archive size={13} /> Archive
+              </button>
+              <button
+                onClick={() => handleBulkAction('delete')}
+                disabled={bulkLoading}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-semibold rounded-lg bg-red-500/30 hover:bg-red-500/50 text-white border border-red-400/30 transition-colors disabled:opacity-50"
+              >
+                <Trash2 size={13} /> Delete
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Error */}
         {error && (
           <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-red-700 text-sm">
@@ -152,13 +249,22 @@ export default function DemosList() {
         )}
 
         {/* Table */}
-        <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-gray-50 overflow-hidden pb-6">
+        <div ref={tableRef} className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-gray-50 overflow-hidden pb-6">
           <table className="w-full">
             <thead>
               <tr className="border-b-2 border-gray-50">
-                <th className="px-6 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Title</th>
+                <th className="pl-5 pr-3 py-4 w-10">
+                  <input
+                    type="checkbox"
+                    className="rounded border-gray-300 text-sap-blue focus:ring-sap-blue"
+                    checked={demos.length > 0 && selected.size === demos.length}
+                    onChange={toggleAll}
+                  />
+                </th>
+                <th className="px-3 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Title</th>
                 <th className="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Date</th>
                 <th className="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Status</th>
+                <th className="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest w-36">Completeness</th>
                 <th className="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Created by</th>
                 <th className="px-4 py-4 text-left text-xs font-bold text-gray-400 uppercase tracking-widest">Presentations</th>
                 <th className="px-4 py-4" />
@@ -167,7 +273,7 @@ export default function DemosList() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center">
+                  <td colSpan={8} className="py-16 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Spinner />
                       <span className="text-xs text-gray-400">Loading…</span>
@@ -176,7 +282,7 @@ export default function DemosList() {
                 </tr>
               ) : demos.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="py-16 text-center">
+                  <td colSpan={8} className="py-16 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center">
                         <Search size={18} className="text-gray-300" />
@@ -187,38 +293,63 @@ export default function DemosList() {
                   </td>
                 </tr>
               ) : (
-                demos.map(demo => (
-                  <tr key={demo.ID} className="group border-b border-gray-50 last:border-0 hover:bg-blue-50/40 transition-colors">
-                    <td className="px-6 py-4">
-                      <Link to={`/demos/${demo.ID}`} className="font-semibold text-gray-800 group-hover:text-sap-blue transition-colors text-sm line-clamp-1">
-                        {demo.TITLE}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-500">{demo.DEMODATE || '—'}</td>
-                    <td className="px-4 py-4">
-                      <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS_PILL[demo.STATUS] || STATUS_PILL.DRAFT}`}>
-                        {STATUS_LABEL[demo.STATUS] || demo.STATUS}
-                      </span>
-                    </td>
-                    <td className="px-4 py-4 text-sm text-gray-500">
-                      {demo.CREATEDBY ? demo.CREATEDBY.split('@')[0] : '—'}
-                    </td>
-                    <td className="px-4 py-4">
-                      {demo.clientCount > 0 ? (
-                        <span className="inline-flex items-center gap-1 text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-200 px-2 py-0.5 rounded-full">
-                          <Users size={10} /> {demo.clientCount}
+                demos.map((demo, idx) => {
+                  const isFocused = focusedIdx === idx
+                  const isSelected = selected.has(demo.ID)
+                  return (
+                    <tr
+                      key={demo.ID}
+                      onClick={() => setFocusedIdx(idx)}
+                      className={`group border-b border-gray-50 last:border-0 transition-colors cursor-pointer ${
+                        isFocused ? 'bg-blue-50 ring-1 ring-inset ring-sap-blue/30' : isSelected ? 'bg-blue-50/50' : 'hover:bg-blue-50/40'
+                      }`}
+                    >
+                      <td className="pl-5 pr-3 py-4" onClick={e => { e.stopPropagation(); toggleSelect(demo.ID) }}>
+                        <input
+                          type="checkbox"
+                          className="rounded border-gray-300 text-sap-blue focus:ring-sap-blue"
+                          checked={isSelected}
+                          onChange={() => toggleSelect(demo.ID)}
+                        />
+                      </td>
+                      <td className="px-3 py-4">
+                        <Link to={`/demos/${demo.ID}`} className="font-semibold text-gray-800 group-hover:text-sap-blue transition-colors text-sm line-clamp-1">
+                          {demo.TITLE}
+                        </Link>
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-500">{demo.DEMODATE || '—'}</td>
+                      <td className="px-4 py-4">
+                        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${STATUS_PILL[demo.STATUS] || STATUS_PILL.DRAFT}`}>
+                          {STATUS_LABEL[demo.STATUS] || demo.STATUS}
                         </span>
-                      ) : (
-                        <span className="text-xs text-gray-300">—</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-4 text-right">
-                      <Link to={`/demos/${demo.ID}`} className="text-gray-300 group-hover:text-sap-blue transition-colors">
-                        <ChevronRight size={16} />
-                      </Link>
-                    </td>
-                  </tr>
-                ))
+                      </td>
+                      <td className="px-4 py-4 w-36">
+                        {demo.completeness != null ? (
+                          <CompletenessBar score={demo.completeness} compact />
+                        ) : (
+                          <span className="text-xs text-gray-300">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 text-sm text-gray-500">
+                        {demo.CREATEDBY ? demo.CREATEDBY.split('@')[0] : '—'}
+                      </td>
+                      <td className="px-4 py-4">
+                        {demo.clientCount > 0 ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-200 px-2 py-0.5 rounded-full">
+                            <Users size={10} /> {demo.clientCount}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-gray-300">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <Link to={`/demos/${demo.ID}`} className="text-gray-300 group-hover:text-sap-blue transition-colors">
+                          <ChevronRight size={16} />
+                        </Link>
+                      </td>
+                    </tr>
+                  )
+                })
               )}
             </tbody>
           </table>

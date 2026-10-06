@@ -3,6 +3,7 @@ import { Link, useParams, useNavigate, useLocation } from 'react-router-dom'
 import { Check } from 'lucide-react'
 import api from '../api/client'
 import Spinner from '../components/shared/Spinner'
+import TagInput from '../components/shared/TagInput'
 import { useSystems, useClients } from '../hooks/useMasterData'
 
 const STEPS = ['General', 'Clients', 'Systems', 'Review']
@@ -107,6 +108,11 @@ function Step1General({ formData, onChange }) {
           className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-sap-blue"
           placeholder="Describe the demo context, goals, and key scenarios..."
         />
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+        <TagInput value={formData.tags} onChange={v => update('tags', v)} />
+        <p className="text-xs text-gray-400 mt-1">Press Enter or comma to add a tag</p>
       </div>
     </div>
   )
@@ -401,6 +407,7 @@ export default function DemoWizard() {
     description: '',
     demoDate: '',
     status: 'DRAFT',
+    tags: [],
     clients: [],
     systems: [],
   })
@@ -416,6 +423,7 @@ export default function DemoWizard() {
       description: src.DESCRIPTION || '',
       demoDate: '',
       status: 'DRAFT',
+      tags: src.TAGS ? src.TAGS.split(',').filter(Boolean) : [],
       systems: (src.systems || []).map(s => ({ id: s.SYSTEM_ID, notes: s.NOTES || '' })),
       clients: [],
     })
@@ -430,6 +438,7 @@ export default function DemoWizard() {
         description: d.DESCRIPTION || '',
         demoDate: d.DEMODATE || '',
         status: d.STATUS || 'DRAFT',
+        tags: d.TAGS ? d.TAGS.split(',').filter(Boolean) : [],
         clients: (d.clients || []).map(c => ({
           clientId: c.CLIENT_ID,
           presentationDate: c.PRESENTATIONDATE || '',
@@ -450,6 +459,7 @@ export default function DemoWizard() {
         description: formData.description,
         demoDate: formData.demoDate || null,
         status: formData.status,
+        tags: formData.tags,
         systems: formData.systems,
         clients: formData.clients.filter(c => c.clientId)
       }
