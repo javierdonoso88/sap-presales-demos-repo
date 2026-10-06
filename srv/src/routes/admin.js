@@ -48,18 +48,18 @@ router.post('/seed', async (req, res, next) => {
 
     // ── Clients ───────────────────────────────────────────────────────────────
     const clients = [
-      { name: 'Repsol', industry: 'Energy', country: 'Spain', contact: 'Pedro Alonso', email: 'pedro.alonso@repsol.com' },
-      { name: 'Banco Santander', industry: 'Banking', country: 'Spain', contact: 'María López', email: 'mlopez@santander.com' },
-      { name: 'Telefónica', industry: 'Telecom', country: 'Spain', contact: 'Carlos Ruiz', email: 'c.ruiz@telefonica.com' },
-      { name: 'BBVA', industry: 'Banking', country: 'Spain', contact: 'Elena Fernández', email: 'efernandez@bbva.com' },
-      { name: 'Iberdrola', industry: 'Energy', country: 'Spain', contact: 'Roberto Sanz', email: 'r.sanz@iberdrola.com' },
-      { name: 'Mapfre', industry: 'Insurance', country: 'Spain', contact: 'Ana Muñoz', email: 'a.munoz@mapfre.com' },
-      { name: 'Inditex', industry: 'Retail', country: 'Spain', contact: 'Sofía Castro', email: 's.castro@inditex.com' },
-      { name: 'ACS Group', industry: 'Construction', country: 'Spain', contact: 'Javier Morales', email: 'jmorales@acs.es' },
-      { name: 'CaixaBank', industry: 'Banking', country: 'Spain', contact: 'Lucía Herrero', email: 'l.herrero@caixabank.com' },
-      { name: 'Acciona', industry: 'Infrastructure', country: 'Spain', contact: 'Pablo Navarro', email: 'pnavarro@acciona.com' },
-      { name: 'Ferrovial', industry: 'Infrastructure', country: 'Spain', contact: 'Isabel Vega', email: 'i.vega@ferrovial.com' },
-      { name: 'Meliá Hotels', industry: 'Hospitality', country: 'Spain', contact: 'David Romero', email: 'd.romero@melia.com' },
+      { name: 'Repsol', industry: 'Energy', country: 'ES', contact: 'Pedro Alonso', email: 'pedro.alonso@repsol.com' },
+      { name: 'Banco Santander', industry: 'Banking', country: 'ES', contact: 'María López', email: 'mlopez@santander.com' },
+      { name: 'Telefónica', industry: 'Telecom', country: 'ES', contact: 'Carlos Ruiz', email: 'c.ruiz@telefonica.com' },
+      { name: 'BBVA', industry: 'Banking', country: 'ES', contact: 'Elena Fernández', email: 'efernandez@bbva.com' },
+      { name: 'Iberdrola', industry: 'Energy', country: 'ES', contact: 'Roberto Sanz', email: 'r.sanz@iberdrola.com' },
+      { name: 'Mapfre', industry: 'Insurance', country: 'ES', contact: 'Ana Muñoz', email: 'a.munoz@mapfre.com' },
+      { name: 'Inditex', industry: 'Retail', country: 'ES', contact: 'Sofía Castro', email: 's.castro@inditex.com' },
+      { name: 'ACS Group', industry: 'Construction', country: 'ES', contact: 'Javier Morales', email: 'jmorales@acs.es' },
+      { name: 'CaixaBank', industry: 'Banking', country: 'ES', contact: 'Lucía Herrero', email: 'l.herrero@caixabank.com' },
+      { name: 'Acciona', industry: 'Infrastructure', country: 'ES', contact: 'Pablo Navarro', email: 'pnavarro@acciona.com' },
+      { name: 'Ferrovial', industry: 'Infrastructure', country: 'ES', contact: 'Isabel Vega', email: 'i.vega@ferrovial.com' },
+      { name: 'Meliá Hotels', industry: 'Hospitality', country: 'ES', contact: 'David Romero', email: 'd.romero@melia.com' },
     ];
 
     const clientIds = {};
@@ -361,9 +361,9 @@ router.post('/seed', async (req, res, next) => {
       for (const sysName of (d.systems || [])) {
         if (sysIds[sysName]) {
           await query(
-            `INSERT INTO SAP_PRESALES_DEMOS_DEMOSYSTEMS (ID, DEMO_ID, SYSTEM_ID, NOTES)
-             VALUES (?, ?, ?, ?)`,
-            [uuidv4(), demoId, sysIds[sysName], null]
+            `INSERT INTO SAP_PRESALES_DEMOS_DEMOSYSTEMS (DEMO_ID, SYSTEM_ID, NOTES)
+             VALUES (?, ?, ?)`,
+            [demoId, sysIds[sysName], null]
           );
         }
       }
@@ -372,9 +372,9 @@ router.post('/seed', async (req, res, next) => {
       for (const cl of (d.clients || [])) {
         if (clientIds[cl.name]) {
           await query(
-            `INSERT INTO SAP_PRESALES_DEMOS_DEMOCLIENTS (ID, DEMO_ID, CLIENT_ID, PRESENTATIONDATE, RESULT, FEEDBACK)
-             VALUES (?, ?, ?, ?, ?, ?)`,
-            [uuidv4(), demoId, clientIds[cl.name], cl.date || null, cl.result || null, cl.feedback || null]
+            `INSERT INTO SAP_PRESALES_DEMOS_DEMOCLIENTS (DEMO_ID, CLIENT_ID, PRESENTATIONDATE, RESULT, FEEDBACK)
+             VALUES (?, ?, ?, ?, ?)`,
+            [demoId, clientIds[cl.name], cl.date || null, cl.result || null, cl.feedback || null]
           );
         }
       }
