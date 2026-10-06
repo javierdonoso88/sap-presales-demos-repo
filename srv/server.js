@@ -9,48 +9,41 @@ const authMiddleware = require('./src/middleware/auth');
 const apiRouter = require('./src/routes/index');
 const errorHandler = require('./src/middleware/errorHandler');
 
-// Mount custom Express middleware and routes during CAP bootstrap.
-// Routes added here are checked BEFORE CAP's own service routes.
-// Non-matching paths fall through to CAP (e.g. /api/systems → CAP).
-cds.on('bootstrap', app => {
+async function start() {
+  const app = express();
+  cds.app = app;
+
   app.use(helmet({ contentSecurityPolicy: false }));
   app.use(express.json());
-
-  // JWT auth applies to all routes (custom + CAP)
   app.use(authMiddleware);
 
-  // Custom routes — systems handled by CAP, everything else here
+  // Custom routes (demos, clients, dashboard, etc.) — /systems handled by CAP below
   app.use('/api', apiRouter);
 
-  // Static UI build
   app.use(express.static(path.join(__dirname, 'public')));
-
-  // SPA fallback
   app.get(/^(?!\/api).*$/, (_req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
   });
-
   app.use(errorHandler);
-});
 
-// In CF deployment, demo-service.cds has 'using from ../db/schema' which is
-// outside the srv/ deployment folder. Intercept cds.load('*') to return the
-// pre-compiled CSN (built by 'cds build' and shipped as srv/csn.json) instead
-// of scanning .cds files that would fail to resolve cross-directory imports.
-const compiledCSN = require('./csn.json');
-const _cdsLoad = cds.load;
-cds.load = async function (files, options) {
-  if (!files || files === '*') return compiledCSN;
-  return _cdsLoad.call(this, files, options);
-};
+  // Load pre-compiled CSN — avoids resolving '../db/schema' cross-dir import in CF
+  const csn = require('./csn.json');
+  cds.model = cds.compile.for.nodejs(csn);
 
-// cds.server fires 'bootstrap', connects to HANA DB, serves DemoService,
-// and starts the HTTP listener on process.env.PORT — keeps the process alive.
-cds.server({
-  service: 'DemoService',
-  with: require('./demo-service')
-}).catch(err => {
-  console.error('Server failed to start:', err);
+  // Connect to HANA (reads credentials from VCAP_SERVICES in CF)
+  cds.db = await cds.connect.to('db');
+
+  // Mount CAP REST adapter for DemoService — .from(csn) bypasses file loading
+  await cds.serve('DemoService').from(csn).with(require('./demo-service')).in(app);
+
+  // Start HTTP server — CF sets PORT
+  const port = process.env.PORT || 4004;
+  app.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
+  });
+}
+
+start().catch(err => {
+  console.error('Startup failed:', err);
   process.exit(1);
 });
-
