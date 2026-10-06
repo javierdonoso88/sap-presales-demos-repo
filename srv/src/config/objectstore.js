@@ -9,7 +9,7 @@ let _bucket = null;
 function getS3() {
   if (_client) return { client: _client, bucket: _bucket };
   try {
-    const services = xsenv.getServices({ objectstore: { tag: 'objectstore' } });
+    const services = xsenv.getServices({ objectstore: { label: 'objectstore' } });
     const creds = services.objectstore;
     _client = new S3Client({
       region: creds.region,
