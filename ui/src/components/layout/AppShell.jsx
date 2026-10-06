@@ -27,53 +27,56 @@ export default function AppShell() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <aside className="w-60 flex-shrink-0 bg-[#0040b0] flex flex-col">
-        <div className="p-4 border-b border-blue-700">
-          <div className="text-white font-bold text-lg leading-tight">SAP Presales</div>
-          <div className="text-blue-200 text-sm">Demo Repository</div>
+      <aside className="w-60 flex-shrink-0 bg-sidebar-bg flex flex-col">
+        {/* Logo */}
+        <div className="px-4 py-5 border-b border-zinc-800">
+          <div className="text-white font-bold text-base leading-tight tracking-tight">SAP Presales</div>
+          <div className="text-zinc-400 text-xs mt-0.5">Demo Repository</div>
         </div>
 
-        {/* Search button */}
+        {/* Search */}
         <div className="px-3 pt-3">
           <button
             onClick={() => setSearchOpen(true)}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-blue-300 hover:text-white hover:bg-blue-800 transition-colors border border-blue-700 hover:border-blue-600"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-sidebar-hover transition-colors border border-zinc-800"
           >
-            <Search size={14} />
-            <span className="flex-1 text-left">Search…</span>
-            <kbd className="text-xs bg-blue-900/60 border border-blue-600 rounded px-1.5 py-0.5 font-mono leading-none">⌘K</kbd>
+            <Search size={13} />
+            <span className="flex-1 text-left text-xs">Search…</span>
+            <kbd className="text-xs bg-zinc-900 border border-zinc-700 rounded px-1.5 py-0.5 font-mono leading-none text-zinc-500">⌘K</kbd>
           </button>
         </div>
 
-        <nav className="flex-1 p-2 space-y-1 mt-2">
+        {/* Nav */}
+        <nav className="flex-1 p-3 space-y-0.5 mt-2">
           {navItems.map(({ to, icon: Icon, label, end }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors ${
+                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-sap-blue text-white'
-                    : 'text-blue-200 hover:text-white hover:bg-blue-800'
+                    ? 'bg-brand text-white'
+                    : 'text-sidebar-text hover:text-white hover:bg-sidebar-hover'
                 }`
               }
             >
-              <Icon size={18} />
+              <Icon size={16} />
               {label}
             </NavLink>
           ))}
         </nav>
 
-        <div className="p-4 border-t border-blue-700">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-sap-gold flex items-center justify-center text-sm font-bold text-gray-900">U</div>
-            <span className="text-blue-200 text-sm">Presales User</span>
+        {/* User */}
+        <div className="p-4 border-t border-zinc-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full bg-brand flex items-center justify-center text-xs font-bold text-white flex-shrink-0">U</div>
+            <span className="text-zinc-400 text-xs truncate">Presales User</span>
           </div>
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto bg-sap-gray-light">
+      <main className="flex-1 overflow-y-auto bg-zinc-50 scrollbar-thin">
         <Outlet />
       </main>
 

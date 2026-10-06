@@ -1,13 +1,14 @@
-const styles = {
-  DRAFT: 'bg-gray-100 text-gray-700 border-gray-300',
-  READY: 'bg-green-100 text-green-800 border-green-300',
-  ARCHIVED: 'bg-orange-100 text-orange-700 border-orange-300',
+const config = {
+  READY:    { label: 'Ready',    classes: 'bg-emerald-50 text-emerald-700 border border-emerald-200' },
+  DRAFT:    { label: 'Draft',    classes: 'bg-zinc-100 text-zinc-600 border border-zinc-200' },
+  ARCHIVED: { label: 'Archived', classes: 'bg-amber-50 text-amber-700 border border-amber-200' },
 }
 
 export default function StatusBadge({ status }) {
+  const c = config[status] || config.DRAFT
   return (
-    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${styles[status] || styles.DRAFT}`}>
-      {status}
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${c.classes}`}>
+      {c.label}
     </span>
   )
 }

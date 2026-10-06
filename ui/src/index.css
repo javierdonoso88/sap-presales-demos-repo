@@ -4,5 +4,18 @@
 
 @layer base {
   * { box-sizing: border-box; }
-  body { @apply bg-sap-gray-light text-gray-800 font-sans; margin: 0; }
+  html { font-feature-settings: 'cv11', 'ss01'; }
+  body {
+    @apply bg-zinc-50 text-zinc-900 font-sans;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar-track { @apply bg-transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-zinc-200 rounded-full; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { @apply bg-zinc-300; }
 }
