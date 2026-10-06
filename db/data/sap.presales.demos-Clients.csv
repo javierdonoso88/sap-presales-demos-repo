@@ -11,3 +11,16 @@ ID,name,industry,country,contact,email,createdAt,createdBy,modifiedAt,modifiedBy
 33333333-3333-3333-3333-000000000010,Endesa,Energía,ESP,David Ruiz Herrera,druiz@endesa.com,2026-08-01T09:00:00Z,admin,2026-08-01T09:00:00Z,admin
 33333333-3333-3333-3333-000000000011,ACS Group,Construcción,ESP,Patricia Jiménez Cano,pjimenez@acs.com,2026-08-10T09:00:00Z,admin,2026-08-10T09:00:00Z,admin
 33333333-3333-3333-3333-000000000012,Meliá Hotels International,Hostelería,ESP,Antonio López Serrano,alopez@melia.com,2026-08-20T09:00:00Z,admin,2026-08-20T09:00:00Z,admin
+33333333-3333-3333-3333-000000000013,El Corte Inglés,Retail,ESP,José Alonso Martín,jalonso@elcorteingles.es,2025-01-10T09:00:00Z,admin,2025-01-10T09:00:00Z,admin
+33333333-3333-3333-3333-000000000014,Acciona,Construcción y Energía,ESP,Carmen Vidal Torres,cvidal@acciona.com,2025-02-01T09:00:00Z,admin,2025-02-01T09:00:00Z,admin
+33333333-3333-3333-3333-000000000015,Naturgy,Energía,ESP,Francisco Peña Molina,fpena@naturgy.com,2025-01-05T09:00:00Z,admin,2025-01-05T09:00:00Z,admin
+33333333-3333-3333-3333-000000000016,Sacyr,Construcción,ESP,Beatriz Lara Campos,blara@sacyr.com,2025-03-01T09:00:00Z,admin,2025-03-01T09:00:00Z,admin
+33333333-3333-3333-3333-000000000017,Grifols,Farmacéutica,ESP,Miguel Solano Rivas,msolano@grifols.com,2025-01-20T09:00:00Z,admin,2025-01-20T09:00:00Z,admin
+33333333-3333-3333-3333-000000000018,Amadeus IT Group,Tecnología,ESP,Cristina Fuentes Alba,cfuentes@amadeus.com,2025-03-15T09:00:00Z,admin,2025-03-15T09:00:00Z,admin
+33333333-3333-3333-3333-000000000019,Bankinter,Banca,ESP,Fernando Ortega Bravo,fortega@bankinter.com,2025-01-15T09:00:00Z,admin,2025-01-15T09:00:00Z,admin
+33333333-3333-3333-3333-000000000020,Mutua Madrileña,Seguros,ESP,Raquel Iglesias Paz,riglesias@mutua.es,2025-06-01T09:00:00Z,admin,2025-06-01T09:00:00Z,admin
+33333333-3333-3333-3333-000000000021,Prosegur,Servicios de Seguridad,ESP,Álvaro Cano Serrano,acano@prosegur.com,2025-04-01T09:00:00Z,admin,2025-04-01T09:00:00Z,admin
+33333333-3333-3333-3333-000000000022,Fluidra,Industria,ESP,Nuria Delgado Montes,ndelgado@fluidra.com,2025-07-01T09:00:00Z,admin,2025-07-01T09:00:00Z,admin
+33333333-3333-3333-3333-000000000023,EDP Portugal,Energía,PRT,Margarida Sousa Pinto,msousa@edp.pt,2025-05-01T09:00:00Z,admin,2025-05-01T09:00:00Z,admin
+33333333-3333-3333-3333-000000000024,Galp,Petróleo y Gas,PRT,Ricardo Neto Alves,rneto@galp.com,2025-06-15T09:00:00Z,admin,2025-06-15T09:00:00Z,admin
+33333333-3333-3333-3333-000000000025,Sonae,Retail,PRT,Teresa Rodrigues Costa,trodrigues@sonae.pt,2025-07-15T09:00:00Z,admin,2025-07-15T09:00:00Z,admin

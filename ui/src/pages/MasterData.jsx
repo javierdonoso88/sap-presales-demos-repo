@@ -345,42 +345,50 @@ export default function MasterData() {
 
   const setCount = (key) => (val) => setCounts(c => ({ ...c, [key]: val }))
 
+  const ICON_CLASS = {
+    tenants:   'bg-gradient-to-br from-blue-500 to-blue-700',
+    solutions: 'bg-gradient-to-br from-violet-500 to-violet-700',
+    clients:   'bg-gradient-to-br from-emerald-400 to-emerald-600',
+    objects:   'bg-gradient-to-br from-amber-400 to-amber-600',
+  }
+
   return (
     <div className="min-h-full">
       {/* Header */}
       <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-blue-950 px-6 pt-8 pb-20">
-        <div>
-          <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1">Configuration</p>
-          <h1 className="text-white text-3xl font-black tracking-tight">Master Data</h1>
-          <p className="text-slate-400 text-sm mt-1">Tenants, solutions, clients, and objects</p>
-        </div>
-        {/* Stats row in header */}
-        <div className="grid grid-cols-4 gap-3 mt-6">
+        <p className="text-blue-400 text-xs font-bold uppercase tracking-widest mb-1">Configuration</p>
+        <h1 className="text-white text-3xl font-black tracking-tight">Master Data</h1>
+        <p className="text-slate-400 text-sm mt-1">Tenants, solutions, clients, and objects</p>
+      </div>
+
+      <div className="px-6 -mt-12 space-y-5 pb-6">
+        {/* Floating stat cards */}
+        <div className="grid grid-cols-4 gap-4">
           {TAB_CONFIG.map(tab => {
             const Icon = tab.icon
+            const count = counts[tab.key]
+            const isActive = activeTab === tab.key
             return (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 p-3 rounded-xl text-left transition-all border ${activeTab === tab.key ? 'bg-white/15 border-white/30 text-white' : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'}`}
+                className={`bg-white rounded-xl p-4 shadow-sm border text-left flex items-center gap-3 transition-all hover:shadow-md ${isActive ? 'border-blue-200 ring-2 ring-blue-100' : 'border-gray-50'}`}
               >
-                <Icon size={15} className={activeTab === tab.key ? 'text-blue-300' : 'text-slate-400'} />
+                <div className={`p-2 rounded-lg ${ICON_CLASS[tab.key]}`}>
+                  <Icon size={15} className="text-white" />
+                </div>
                 <div>
-                  <p className="text-xs font-semibold">{tab.label}</p>
-                  {counts[tab.key] !== null && (
-                    <p className={`text-lg font-black leading-none mt-0.5 ${activeTab === tab.key ? 'text-white' : 'text-slate-200'}`}>
-                      {counts[tab.key]}
-                    </p>
-                  )}
+                  <p className="text-2xl font-black text-gray-900 leading-none">
+                    {count !== null ? count : <span className="text-gray-300">—</span>}
+                  </p>
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-0.5">{tab.label}</p>
                 </div>
               </button>
             )
           })}
         </div>
-      </div>
 
-      {/* Main content card */}
-      <div className="px-6 -mt-4 pb-6">
+        {/* Main content card */}
         <div className="bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-gray-50 overflow-hidden">
           {/* Tab bar */}
           <div className="flex border-b border-gray-100 px-2">
@@ -398,11 +406,6 @@ export default function MasterData() {
                 >
                   <Icon size={14} />
                   {tab.label}
-                  {counts[tab.key] !== null && (
-                    <span className={`ml-1 text-xs font-bold px-1.5 py-0.5 rounded-full ${activeTab === tab.key ? 'bg-blue-100 text-sap-blue' : 'bg-gray-100 text-gray-500'}`}>
-                      {counts[tab.key]}
-                    </span>
-                  )}
                 </button>
               )
             })}
