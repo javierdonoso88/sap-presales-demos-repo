@@ -53,11 +53,10 @@ router.get('/stats', async (req, res, next) => {
 
     // Recent demos (last 5)
     const recentRows = await query(`
-      SELECT d.ID, d.TITLE, d.STATUS, d.DEMODATE, d.CREATEDAT, d.CREATEDBY,
+      SELECT TOP 5 d.ID, d.TITLE, d.STATUS, d.DEMODATE, d.CREATEDAT, d.CREATEDBY,
         (SELECT COUNT(*) FROM SAP_PRESALES_DEMOS_DEMOCLIENTS WHERE DEMO_ID = d.ID) AS CLIENT_COUNT
       FROM SAP_PRESALES_DEMOS_DEMOS d
       ORDER BY d.CREATEDAT DESC
-      FETCH FIRST 5 ROWS ONLY
     `);
 
     const recentDemos = recentRows.map(r => ({ ...r, CLIENT_COUNT: Number(r.CLIENT_COUNT) }));
