@@ -33,4 +33,8 @@ cds.on('bootstrap', app => {
   app.use(errorHandler);
 });
 
-module.exports = cds.server;
+// Explicitly start CAP's HTTP server (listens on process.env.PORT)
+cds.serve('all').catch(err => {
+  console.error('CAP server failed to start:', err);
+  process.exit(1);
+});
