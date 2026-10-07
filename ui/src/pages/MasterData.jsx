@@ -232,6 +232,8 @@ function SystemsTab({ onCount }) {
 }
 
 // ─── System Stats Modal ───────────────────────────────────────────────────────
+const STATUS_CHART_COLORS = { READY: '#34d399', DRAFT: '#fbbf24', ARCHIVED: '#94a3b8' }
+
 function SystemStatsModal({ system, open, onClose }) {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -245,6 +247,20 @@ function SystemStatsModal({ system, open, onClose }) {
       .finally(() => setLoading(false))
   }, [open, system])
 
+  const byStatus = stats?.demos
+    ? Object.entries(
+        stats.demos.reduce((acc, d) => {
+          acc[d.STATUS] = (acc[d.STATUS] || 0) + 1
+          return acc
+        }, {})
+      ).map(([status, count]) => ({ status, count }))
+    : []
+
+  const srColor = stats?.successRate == null ? 'rgba(255,255,255,0.35)'
+    : stats.successRate >= 60 ? '#34d399'
+    : stats.successRate >= 30 ? '#fbbf24'
+    : '#f87171'
+
   return (
     <Modal open={open} onClose={onClose} title={`Analytics — ${system?.NAME}`}>
       {loading ? (
@@ -253,25 +269,53 @@ function SystemStatsModal({ system, open, onClose }) {
         <p className="text-sm text-center py-8" style={{ color: 'rgba(255,255,255,0.35)' }}>No stats available.</p>
       ) : (
         <div className="space-y-6">
+          {/* KPI row */}
           <div className="grid grid-cols-3 gap-3">
-            {[
-              { label: 'Demos', value: stats.demoCount },
-              { label: 'Presentations', value: stats.presentationCount },
-              { label: 'Success rate', value: stats.successRate != null ? `${stats.successRate}%` : '—' },
-            ].map(({ label, value }) => (
-              <div key={label} className="rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <p className="text-2xl font-bold text-white">{value ?? 0}</p>
-                <p className="text-xs font-semibold uppercase tracking-wider mt-1" style={{ color: 'rgba(255,255,255,0.40)' }}>{label}</p>
-              </div>
-            ))}
+            <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(77,166,255,0.08)', border: '1px solid rgba(77,166,255,0.18)' }}>
+              <p className="text-3xl font-bold text-white">{stats.demoCount}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider mt-1 text-brand">Demos</p>
+            </div>
+            <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.18)' }}>
+              <p className="text-3xl font-bold text-white">{stats.presentationCount}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider mt-1" style={{ color: '#c4b5fd' }}>Presentaciones</p>
+            </div>
+            <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(52,211,153,0.06)', border: `1px solid ${srColor}30` }}>
+              <p className="text-3xl font-bold" style={{ color: srColor }}>
+                {stats.successRate != null ? `${stats.successRate}%` : '—'}
+              </p>
+              <p className="text-xs font-semibold uppercase tracking-wider mt-1" style={{ color: 'rgba(255,255,255,0.40)' }}>Éxito</p>
+            </div>
           </div>
+
+          {/* Status breakdown chart */}
+          {byStatus.length > 0 && (
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.40)' }}>Demos por estado</h3>
+              <ResponsiveContainer width="100%" height={140}>
+                <BarChart data={byStatus} margin={{ top: 0, right: 10, left: -25, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} vertical={false} />
+                  <XAxis dataKey="status" tick={{ fontSize: 11, fill: TICK_COLOR }} axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: TICK_COLOR }} axisLine={false} tickLine={false} />
+                  <Tooltip formatter={(v) => [v, 'Demos']}
+                    contentStyle={{ fontSize: 12, borderRadius: 8, background: 'rgba(10,14,40,0.96)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }} />
+                  <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                    {byStatus.map((entry, i) => (
+                      <Cell key={i} fill={STATUS_CHART_COLORS[entry.status] || '#94a3b8'} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+
+          {/* Demo list */}
           {stats.demos?.length > 0 && (
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.40)' }}>Linked Demos ({stats.demos.length})</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.40)' }}>Demos vinculadas ({stats.demos.length})</h3>
               <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
                 <table className="w-full">
                   <thead><tr style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                    {['Demo', 'Status', 'Date', 'Presentations'].map(h =>
+                    {['Demo', 'Estado', 'Fecha', 'Pres.'].map(h =>
                       <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.40)' }}>{h}</th>
                     )}
                   </tr></thead>
@@ -287,7 +331,7 @@ function SystemStatsModal({ system, open, onClose }) {
                         </td>
                         <td className="px-4 py-3"><StatusBadge status={d.STATUS} /></td>
                         <td className="px-4 py-3 text-sm" style={{ color: 'rgba(255,255,255,0.50)' }}>{d.DEMODATE || '—'}</td>
-                        <td className="px-4 py-3 text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.65)' }}>{d.presentationCount}</td>
+                        <td className="px-4 py-3 text-sm font-semibold text-center" style={{ color: 'rgba(255,255,255,0.65)' }}>{d.presentationCount}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -295,8 +339,9 @@ function SystemStatsModal({ system, open, onClose }) {
               </div>
             </div>
           )}
-          {(!stats.demos || stats.demos.length === 0) && (
-            <p className="text-sm text-center py-4" style={{ color: 'rgba(255,255,255,0.35)' }}>This system has not been used in any demo.</p>
+
+          {stats.demoCount === 0 && (
+            <p className="text-sm text-center py-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Este sistema no se ha usado en ninguna demo todavía.</p>
           )}
         </div>
       )}
@@ -305,6 +350,13 @@ function SystemStatsModal({ system, open, onClose }) {
 }
 
 // ─── Client Stats Modal ───────────────────────────────────────────────────────
+const RESULT_COLOR_MAP = {
+  VERY_INTERESTED: '#34d399',
+  INTERESTED:      '#60a5fa',
+  NEUTRAL:         '#fbbf24',
+  NOT_INTERESTED:  '#f87171',
+}
+
 function ClientStatsModal({ client, open, onClose }) {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -318,40 +370,68 @@ function ClientStatsModal({ client, open, onClose }) {
       .finally(() => setLoading(false))
   }, [open, client])
 
+  const totalPresentations = stats?.byResult?.reduce((s, r) => s + r.count, 0) ?? 0
+  const positiveCount = stats?.byResult
+    ?.filter(r => ['VERY_INTERESTED', 'INTERESTED'].includes(r.result))
+    .reduce((s, r) => s + r.count, 0) ?? 0
+  const successRate = totalPresentations > 0 ? Math.round((positiveCount / totalPresentations) * 100) : null
+  const srColor = successRate == null ? 'rgba(255,255,255,0.35)' : successRate >= 60 ? '#34d399' : successRate >= 30 ? '#fbbf24' : '#f87171'
+
   return (
     <Modal open={open} onClose={onClose} title={`Analytics — ${client?.NAME}`}>
       {loading ? (
         <div className="flex justify-center py-10"><Spinner /></div>
       ) : !stats ? (
-        <p className="text-sm text-center py-8" style={{ color: 'rgba(255,255,255,0.35)' }}>No stats available.</p>
+        <p className="text-sm text-center py-8" style={{ color: 'rgba(255,255,255,0.35)' }}>No hay datos disponibles.</p>
       ) : (
         <div className="space-y-6">
+          {/* KPI row */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(77,166,255,0.08)', border: '1px solid rgba(77,166,255,0.18)' }}>
+              <p className="text-3xl font-bold text-white">{stats.demos.length}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider mt-1 text-brand">Demos</p>
+            </div>
+            <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.18)' }}>
+              <p className="text-3xl font-bold text-white">{totalPresentations}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider mt-1" style={{ color: '#c4b5fd' }}>Presentaciones</p>
+            </div>
+            <div className="rounded-xl p-4 text-center" style={{ background: 'rgba(52,211,153,0.06)', border: `1px solid ${srColor}30` }}>
+              <p className="text-3xl font-bold" style={{ color: srColor }}>{successRate != null ? `${successRate}%` : '—'}</p>
+              <p className="text-xs font-semibold uppercase tracking-wider mt-1" style={{ color: 'rgba(255,255,255,0.40)' }}>Éxito</p>
+            </div>
+          </div>
+
+          {/* Result distribution chart */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.40)' }}>Result Distribution</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.40)' }}>Distribución por resultado</h3>
             {stats.byResult.length > 0 ? (
-              <ResponsiveContainer width="100%" height={160}>
+              <ResponsiveContainer width="100%" height={150}>
                 <BarChart data={stats.byResult} margin={{ top: 0, right: 10, left: -25, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} vertical={false} />
-                  <XAxis dataKey="result" tick={{ fontSize: 11, fill: TICK_COLOR }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="result" tick={{ fontSize: 10, fill: TICK_COLOR }} axisLine={false} tickLine={false} />
                   <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: TICK_COLOR }} axisLine={false} tickLine={false} />
                   <Tooltip formatter={(v) => [v, 'Demos']}
                     contentStyle={{ fontSize: 12, borderRadius: 8, background: 'rgba(10,14,40,0.96)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }} />
                   <Bar dataKey="count" radius={[4, 4, 0, 0]}>
-                    {stats.byResult.map((_, i) => <Cell key={i} fill={RESULT_COLORS[i % RESULT_COLORS.length]} />)}
+                    {stats.byResult.map((r, i) => (
+                      <Cell key={i} fill={RESULT_COLOR_MAP[r.result] || RESULT_COLORS[i % RESULT_COLORS.length]} />
+                    ))}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-sm text-center py-4" style={{ color: 'rgba(255,255,255,0.35)' }}>No presentations recorded.</p>
+              <p className="text-sm text-center py-4" style={{ color: 'rgba(255,255,255,0.35)' }}>Sin presentaciones registradas.</p>
             )}
           </div>
+
+          {/* Demo list */}
           {stats.demos.length > 0 && (
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.40)' }}>Linked Demos ({stats.demos.length})</h3>
+              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.40)' }}>Demos vinculadas ({stats.demos.length})</h3>
               <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
                 <table className="w-full">
                   <thead><tr style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                    {['Demo', 'Status', 'Presentation Date', 'Result'].map(h =>
+                    {['Demo', 'Estado', 'Fecha Pres.', 'Resultado'].map(h =>
                       <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.40)' }}>{h}</th>
                     )}
                   </tr></thead>
@@ -367,7 +447,9 @@ function ClientStatsModal({ client, open, onClose }) {
                         </td>
                         <td className="px-4 py-3"><StatusBadge status={d.STATUS} /></td>
                         <td className="px-4 py-3 text-sm" style={{ color: 'rgba(255,255,255,0.50)' }}>{d.PRESENTATIONDATE || '—'}</td>
-                        <td className="px-4 py-3 text-sm" style={{ color: 'rgba(255,255,255,0.50)' }}>{d.RESULT || '—'}</td>
+                        <td className="px-4 py-3 text-sm font-semibold" style={{ color: RESULT_COLOR_MAP[d.RESULT] || 'rgba(255,255,255,0.50)' }}>
+                          {d.RESULT || '—'}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
