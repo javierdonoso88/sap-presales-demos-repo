@@ -1,11 +1,11 @@
-import { useState, useRef, KeyboardEvent } from 'react'
+import { useState, useRef } from 'react'
 import { X } from 'lucide-react'
 
 const TAG_COLORS = [
-  'bg-blue-100 text-blue-700', 'bg-teal-100 text-teal-700',
-  'bg-violet-100 text-violet-700', 'bg-amber-100 text-amber-700',
-  'bg-emerald-100 text-emerald-700', 'bg-pink-100 text-pink-700',
-  'bg-orange-100 text-orange-700', 'bg-indigo-100 text-indigo-700',
+  'bg-blue-400/15 text-blue-300', 'bg-teal-400/15 text-teal-300',
+  'bg-violet-400/15 text-violet-300', 'bg-amber-400/15 text-amber-300',
+  'bg-emerald-400/15 text-emerald-300', 'bg-pink-400/15 text-pink-300',
+  'bg-orange-400/15 text-orange-300', 'bg-indigo-400/15 text-indigo-300',
 ]
 
 function tagColor(tag) {
@@ -49,8 +49,10 @@ export default function TagInput({ value = [], onChange }) {
 
   return (
     <div
-      className="flex flex-wrap gap-1.5 min-h-[38px] w-full border border-gray-200 rounded-lg px-2.5 py-1.5 focus-within:ring-2 focus-within:ring-sap-blue focus-within:border-transparent cursor-text bg-white"
+      className="flex flex-wrap gap-1.5 min-h-[38px] w-full rounded-lg px-2.5 py-1.5 cursor-text transition-all"
+      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)' }}
       onClick={() => inputRef.current?.focus()}
+      onFocus={() => {}}
     >
       {value.map(t => (
         <TagChip key={t} tag={t} onRemove={(tag) => onChange(value.filter(v => v !== tag))} />
@@ -62,7 +64,8 @@ export default function TagInput({ value = [], onChange }) {
         onKeyDown={handleKey}
         onBlur={handleBlur}
         placeholder={value.length === 0 ? 'Añadir tags… (Enter para confirmar)' : ''}
-        className="flex-1 min-w-[120px] text-sm outline-none bg-transparent placeholder-gray-400"
+        className="flex-1 min-w-[120px] text-sm outline-none bg-transparent text-white"
+        style={{ caretColor: '#4da6ff' }}
       />
     </div>
   )

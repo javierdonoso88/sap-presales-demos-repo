@@ -17,14 +17,14 @@ import {
 const TABS = ['General', 'Systems', 'Clients', 'Attachments', 'History']
 
 const TYPE_COLORS = {
-  SAC: 'bg-teal-100 text-teal-700', DATASPHERE: 'bg-blue-100 text-blue-700',
-  BDC: 'bg-indigo-100 text-indigo-700', S4HANA: 'bg-emerald-100 text-emerald-700',
-  BW4HANA: 'bg-orange-100 text-orange-700', OTHER: 'bg-zinc-100 text-zinc-600',
+  SAC: 'bg-teal-400/15 text-teal-300', DATASPHERE: 'bg-blue-400/15 text-blue-300',
+  BDC: 'bg-indigo-400/15 text-indigo-300', S4HANA: 'bg-emerald-400/15 text-emerald-300',
+  BW4HANA: 'bg-orange-400/15 text-orange-300', OTHER: 'bg-white/10 text-white/50',
 }
 const LANDSCAPE_LABELS = { BDC_GA: 'BDC GA', GLA26Q2: 'GLA26Q2', SANDBOX: 'Sandbox', EXTERNAL: 'External' }
 const LANDSCAPE_COLORS = {
-  BDC_GA: 'bg-blue-100 text-blue-700', GLA26Q2: 'bg-violet-100 text-violet-700',
-  SANDBOX: 'bg-amber-100 text-amber-700', EXTERNAL: 'bg-zinc-100 text-zinc-600',
+  BDC_GA: 'bg-blue-400/15 text-blue-300', GLA26Q2: 'bg-violet-400/15 text-violet-300',
+  SANDBOX: 'bg-amber-400/15 text-amber-300', EXTERNAL: 'bg-white/10 text-white/50',
 }
 
 // ─── File helpers ─────────────────────────────────────────────────────────────
@@ -37,13 +37,13 @@ function formatBytes(bytes) {
 }
 
 function fileIcon(ct) {
-  if (!ct) return <File size={16} className="text-zinc-400" />
-  if (ct === 'application/pdf') return <FileText size={16} className="text-red-500" />
-  if (ct.includes('presentation') || ct.includes('powerpoint')) return <FileText size={16} className="text-orange-500" />
-  if (ct.includes('spreadsheet') || ct.includes('excel')) return <FileText size={16} className="text-emerald-600" />
-  if (ct.includes('word') || ct.includes('document')) return <FileText size={16} className="text-blue-500" />
-  if (ct.startsWith('image/')) return <Image size={16} className="text-violet-500" />
-  return <File size={16} className="text-zinc-400" />
+  if (!ct) return <File size={16} style={{ color: 'rgba(255,255,255,0.30)' }} />
+  if (ct === 'application/pdf') return <FileText size={16} className="text-red-400" />
+  if (ct.includes('presentation') || ct.includes('powerpoint')) return <FileText size={16} className="text-orange-400" />
+  if (ct.includes('spreadsheet') || ct.includes('excel')) return <FileText size={16} className="text-emerald-400" />
+  if (ct.includes('word') || ct.includes('document')) return <FileText size={16} className="text-blue-400" />
+  if (ct.startsWith('image/')) return <Image size={16} className="text-violet-400" />
+  return <File size={16} style={{ color: 'rgba(255,255,255,0.30)' }} />
 }
 
 function fileTypeLabel(ct) {
@@ -132,9 +132,9 @@ function AttachmentsTab({ demoId }) {
   return (
     <div className="space-y-4">
       {error && (
-        <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-red-700 text-sm">
+        <div className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm" style={{ background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.25)', color: '#fca5a5' }}>
           <AlertCircle size={15} /><span>{error}</span>
-          <button onClick={() => setError(null)} className="ml-auto text-red-400 hover:text-red-700"><X size={14} /></button>
+          <button onClick={() => setError(null)} className="ml-auto opacity-70 hover:opacity-100 transition-opacity"><X size={14} /></button>
         </div>
       )}
       <div
@@ -142,27 +142,37 @@ function AttachmentsTab({ demoId }) {
         onDragLeave={() => setDragOver(false)}
         onDrop={(e) => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files?.[0]; if (f) handleUpload(f) }}
         onClick={() => !uploading && fileInputRef.current?.click()}
-        className={`rounded-xl border-2 border-dashed flex flex-col items-center justify-center py-10 gap-3 cursor-pointer transition-all ${dragOver ? 'border-brand bg-brand-light' : 'border-zinc-200 hover:border-brand hover:bg-brand-light/40'} ${uploading ? 'pointer-events-none opacity-75' : ''}`}
+        className="rounded-xl border-2 border-dashed flex flex-col items-center justify-center py-10 gap-3 cursor-pointer transition-all"
+        style={{
+          borderColor: dragOver ? 'rgba(77,166,255,0.50)' : 'rgba(255,255,255,0.12)',
+          background: dragOver ? 'rgba(77,166,255,0.08)' : 'rgba(255,255,255,0.02)',
+          opacity: uploading ? 0.75 : 1,
+          pointerEvents: uploading ? 'none' : 'auto',
+        }}
       >
         <input ref={fileInputRef} type="file" className="hidden"
           accept=".pdf,.ppt,.pptx,.xls,.xlsx,.doc,.docx,.png,.jpg,.jpeg"
           onChange={(e) => handleUpload(e.target.files?.[0])} />
         {uploading ? (
           <>
-            <div className="w-10 h-10 rounded-xl bg-brand-light flex items-center justify-center"><Upload size={18} className="text-brand" /></div>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(77,166,255,0.15)' }}>
+              <Upload size={18} className="text-brand" />
+            </div>
             <div className="text-center">
               <p className="text-sm font-semibold text-brand">Uploading… {uploadProgress}%</p>
-              <div className="mt-2 w-48 h-2 bg-brand-light rounded-full overflow-hidden">
+              <div className="mt-2 w-48 h-2 rounded-full overflow-hidden" style={{ background: 'rgba(77,166,255,0.15)' }}>
                 <div className="h-full bg-brand rounded-full transition-all duration-200" style={{ width: `${uploadProgress}%` }} />
               </div>
             </div>
           </>
         ) : (
           <>
-            <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center"><Paperclip size={18} className="text-zinc-400" /></div>
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.07)' }}>
+              <Paperclip size={18} style={{ color: 'rgba(255,255,255,0.35)' }} />
+            </div>
             <div className="text-center">
-              <p className="text-sm font-medium text-zinc-700">Drop a file here or <span className="text-brand font-semibold">browse</span></p>
-              <p className="text-xs text-zinc-400 mt-1">PDF, PPT/PPTX, XLS/XLSX, DOC/DOCX, PNG, JPEG · max 200 MB</p>
+              <p className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.65)' }}>Drop a file here or <span className="text-brand font-semibold">browse</span></p>
+              <p className="text-xs mt-1" style={{ color: 'rgba(255,255,255,0.30)' }}>PDF, PPT/PPTX, XLS/XLSX, DOC/DOCX, PNG, JPEG · max 200 MB</p>
             </div>
           </>
         )}
@@ -170,25 +180,35 @@ function AttachmentsTab({ demoId }) {
       {loading ? (
         <div className="flex justify-center py-8"><Spinner /></div>
       ) : attachments.length === 0 ? (
-        <div className="bg-zinc-50 rounded-xl border border-zinc-100 p-10 text-center">
-          <Paperclip size={22} className="text-zinc-300 mx-auto mb-2" />
-          <p className="text-sm text-zinc-400">No attachments yet</p>
+        <div className="rounded-xl p-10 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <Paperclip size={22} className="mx-auto mb-2" style={{ color: 'rgba(255,255,255,0.18)' }} />
+          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>No attachments yet</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
-          <div className="px-5 py-3.5 border-b border-zinc-100 flex items-center gap-2">
-            <Paperclip size={14} className="text-zinc-400" />
-            <span className="text-sm font-semibold text-zinc-700">Files</span>
-            <span className="text-xs font-semibold bg-zinc-100 text-zinc-500 px-2 py-0.5 rounded-full ml-1">{attachments.length}</span>
+        <div className="glass rounded-xl overflow-hidden">
+          <div className="px-5 py-3.5 flex items-center gap-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', background: 'rgba(255,255,255,0.03)' }}>
+            <Paperclip size={14} style={{ color: 'rgba(255,255,255,0.35)' }} />
+            <span className="text-sm font-semibold text-white">Files</span>
+            <span className="text-xs font-semibold px-2 py-0.5 rounded-full ml-1" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.50)' }}>{attachments.length}</span>
           </div>
           <ul>
             {attachments.map((att, i) => (
-              <li key={att.ID} className={`flex items-center gap-4 px-5 py-4 hover:bg-zinc-50 transition-colors ${i < attachments.length - 1 ? 'border-b border-zinc-50' : ''}`}>
-                <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-zinc-50 flex items-center justify-center">{fileIcon(att.CONTENTTYPE)}</div>
+              <li
+                key={att.ID}
+                className="flex items-center gap-4 px-5 py-4 transition-colors"
+                style={{
+                  borderBottom: i < attachments.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+              >
+                <div className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.07)' }}>
+                  {fileIcon(att.CONTENTTYPE)}
+                </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-zinc-800 truncate">{att.FILENAME}</p>
-                  <p className="text-xs text-zinc-400 mt-0.5">
-                    <span className="font-semibold text-zinc-500">{fileTypeLabel(att.CONTENTTYPE)}</span>
+                  <p className="text-sm font-medium text-white truncate">{att.FILENAME}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>
+                    <span className="font-semibold" style={{ color: 'rgba(255,255,255,0.55)' }}>{fileTypeLabel(att.CONTENTTYPE)}</span>
                     {' · '}{formatBytes(att.SIZE)}
                     {att.CREATEDBY && <>{' · '}{att.CREATEDBY.split('@')[0]}</>}
                     {att.CREATEDAT && <>{' · '}{new Date(att.CREATEDAT).toLocaleDateString('es-ES')}</>}
@@ -196,14 +216,26 @@ function AttachmentsTab({ demoId }) {
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
                   {canPreview(att.CONTENTTYPE) && (
-                    <button onClick={() => handlePreview(att)} title="Preview" className="p-2 rounded-lg hover:bg-violet-50 text-zinc-400 hover:text-violet-600 transition-colors">
+                    <button onClick={() => handlePreview(att)} title="Preview"
+                      className="p-2 rounded-lg transition-colors"
+                      style={{ color: 'rgba(255,255,255,0.35)' }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(167,139,250,0.12)'; e.currentTarget.style.color = '#c4b5fd' }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)' }}>
                       <Eye size={14} />
                     </button>
                   )}
-                  <button onClick={() => handleDownload(att)} title="Download" className="p-2 rounded-lg hover:bg-brand-light text-zinc-400 hover:text-brand transition-colors">
+                  <button onClick={() => handleDownload(att)} title="Download"
+                    className="p-2 rounded-lg transition-colors"
+                    style={{ color: 'rgba(255,255,255,0.35)' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(77,166,255,0.12)'; e.currentTarget.style.color = '#4da6ff' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)' }}>
                     <Download size={14} />
                   </button>
-                  <button onClick={() => handleDelete(att)} title="Delete" className="p-2 rounded-lg hover:bg-red-50 text-zinc-400 hover:text-red-500 transition-colors">
+                  <button onClick={() => handleDelete(att)} title="Delete"
+                    className="p-2 rounded-lg transition-colors"
+                    style={{ color: 'rgba(255,255,255,0.35)' }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.12)'; e.currentTarget.style.color = '#f87171' }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.35)' }}>
                     <Trash2 size={14} />
                   </button>
                 </div>
@@ -217,7 +249,7 @@ function AttachmentsTab({ demoId }) {
           {previewAtt?.CONTENTTYPE?.startsWith('image/') ? (
             <img src={previewUrl} alt={previewAtt?.FILENAME} className="max-w-full max-h-[60vh] rounded-lg object-contain" />
           ) : (
-            <iframe src={previewUrl} title={previewAtt?.FILENAME} className="w-full h-[60vh] rounded-lg border border-zinc-100" />
+            <iframe src={previewUrl} title={previewAtt?.FILENAME} className="w-full h-[60vh] rounded-lg" style={{ border: '1px solid rgba(255,255,255,0.10)' }} />
           )}
         </div>
       </Modal>
@@ -246,33 +278,33 @@ function HistoryTab({ demoId }) {
   if (loading) return <div className="flex justify-center py-10"><Spinner /></div>
   if (history.length === 0) return (
     <div className="text-center py-10">
-      <History size={24} className="text-zinc-200 mx-auto mb-2" />
-      <p className="text-sm text-zinc-400">No hay cambios registrados todavía.</p>
+      <History size={24} className="mx-auto mb-2" style={{ color: 'rgba(255,255,255,0.15)' }} />
+      <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>No hay cambios registrados todavía.</p>
     </div>
   )
 
   return (
     <div className="space-y-1">
       {history.map((h, i) => (
-        <div key={h.ID || i} className="flex gap-4 py-3 border-b border-zinc-50 last:border-0">
-          <div className="flex-shrink-0 w-9 h-9 rounded-xl bg-brand-light flex items-center justify-center">
+        <div key={h.ID || i} className="flex gap-4 py-3 last:border-0" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+          <div className="flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(77,166,255,0.12)' }}>
             <Clock size={14} className="text-brand" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-xs font-semibold text-zinc-700">{FIELD_LABELS[h.FIELD] || h.FIELD}</span>
-              <span className="text-xs text-zinc-400">·</span>
-              <span className="text-xs text-zinc-400">{h.CHANGEDBY?.split('@')[0]}</span>
+              <span className="text-xs font-semibold text-white">{FIELD_LABELS[h.FIELD] || h.FIELD}</span>
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.30)' }}>·</span>
+              <span className="text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>{h.CHANGEDBY?.split('@')[0]}</span>
             </div>
             <div className="flex items-center gap-2 mt-1 flex-wrap">
-              <span className="text-xs bg-red-50 text-red-600 px-2 py-0.5 rounded line-through max-w-[180px] truncate">{h.OLDVALUE || '(vacío)'}</span>
-              <ArrowRight size={12} className="text-zinc-300 flex-shrink-0" />
-              <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded max-w-[180px] truncate">{h.NEWVALUE || '(vacío)'}</span>
+              <span className="text-xs px-2 py-0.5 rounded line-through max-w-[180px] truncate" style={{ background: 'rgba(248,113,113,0.12)', color: '#fca5a5' }}>{h.OLDVALUE || '(vacío)'}</span>
+              <ArrowRight size={12} style={{ color: 'rgba(255,255,255,0.20)' }} className="flex-shrink-0" />
+              <span className="text-xs px-2 py-0.5 rounded max-w-[180px] truncate" style={{ background: 'rgba(52,211,153,0.12)', color: '#6ee7b7' }}>{h.NEWVALUE || '(vacío)'}</span>
             </div>
           </div>
           <div className="flex-shrink-0 text-right">
-            <p className="text-xs text-zinc-400">{h.CHANGEDAT ? new Date(h.CHANGEDAT).toLocaleDateString('es-ES') : ''}</p>
-            <p className="text-xs text-zinc-300">{h.CHANGEDAT ? new Date(h.CHANGEDAT).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : ''}</p>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>{h.CHANGEDAT ? new Date(h.CHANGEDAT).toLocaleDateString('es-ES') : ''}</p>
+            <p className="text-xs" style={{ color: 'rgba(255,255,255,0.22)' }}>{h.CHANGEDAT ? new Date(h.CHANGEDAT).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : ''}</p>
           </div>
         </div>
       ))}
@@ -306,7 +338,11 @@ function StatusModal({ open, onClose, demo, onSuccess }) {
     <Modal open={open} onClose={onClose} title="Mark as Ready"
       footer={
         <>
-          <button onClick={onClose} className="px-4 py-2 text-sm font-semibold rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-600 transition-colors">Cancel</button>
+          <button onClick={onClose}
+            className="px-4 py-2 text-sm font-semibold rounded-lg transition-colors"
+            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.70)' }}>
+            Cancel
+          </button>
           <button onClick={handleMarkReady} disabled={saving}
             className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white disabled:opacity-50 transition-colors">
             {saving ? 'Saving…' : <><ArrowRight size={14} /> Mark as Ready</>}
@@ -315,16 +351,18 @@ function StatusModal({ open, onClose, demo, onSuccess }) {
       }
     >
       <div className="space-y-3">
-        <p className="text-sm text-zinc-500">Verifica que la demo está lista para presentar:</p>
+        <p className="text-sm" style={{ color: 'rgba(255,255,255,0.55)' }}>Verifica que la demo está lista para presentar:</p>
         <ul className="space-y-2">
           {checks.map(c => (
             <li key={c.label} className="flex items-center gap-2.5 text-sm">
-              {c.ok ? <CheckCircle2 size={16} className="text-emerald-500 flex-shrink-0" /> : <XCircle size={16} className="text-amber-400 flex-shrink-0" />}
-              <span className={c.ok ? 'text-zinc-700' : 'text-amber-600'}>{c.label}</span>
+              {c.ok ? <CheckCircle2 size={16} className="text-emerald-400 flex-shrink-0" /> : <XCircle size={16} className="text-amber-400 flex-shrink-0" />}
+              <span style={{ color: c.ok ? 'rgba(255,255,255,0.75)' : '#fcd34d' }}>{c.label}</span>
             </li>
           ))}
         </ul>
-        {error && <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>}
+        {error && (
+          <p className="text-xs rounded-lg px-3 py-2" style={{ color: '#fca5a5', background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.25)' }}>{error}</p>
+        )}
       </div>
     </Modal>
   )
@@ -361,7 +399,7 @@ export default function DemoDetail() {
   if (loading) return <div className="flex items-center justify-center p-12"><Spinner size="lg" /></div>
   if (error || !demo) return (
     <div className="p-6">
-      <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm">
+      <div className="rounded-xl p-4 text-sm" style={{ background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.25)', color: '#fca5a5' }}>
         Failed to load demo. <Link to="/demos" className="underline">Back to demos</Link>.
       </div>
     </div>
@@ -376,13 +414,13 @@ export default function DemoDetail() {
   return (
     <div className="min-h-full">
       {/* Page Header */}
-      <div className="bg-white border-b border-zinc-200 px-6 py-5">
+      <div className="glass-header px-6 py-5">
         <Link to="/demos" className="inline-flex items-center gap-1 text-brand text-xs font-semibold uppercase tracking-widest mb-4 hover:opacity-70 transition-opacity">
           ← Demos
         </Link>
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-zinc-900 leading-tight">{demo.TITLE}</h1>
+            <h1 className="text-2xl font-bold text-white leading-tight">{demo.TITLE}</h1>
             <div className="flex items-center gap-3 mt-2.5 flex-wrap">
               {demo.STATUS === 'DRAFT' ? (
                 <button onClick={() => setShowStatusModal(true)} className="group inline-flex items-center gap-1.5 hover:opacity-80" title="Click to mark as Ready">
@@ -392,8 +430,8 @@ export default function DemoDetail() {
               ) : (
                 <StatusBadge status={demo.STATUS} />
               )}
-              {demo.DEMODATE && <span className="text-zinc-400 text-xs font-medium">{demo.DEMODATE}</span>}
-              {demo.CREATEDBY && <span className="text-zinc-400 text-xs">by {demo.CREATEDBY.split('@')[0]}</span>}
+              {demo.DEMODATE && <span className="text-xs font-medium" style={{ color: 'rgba(255,255,255,0.40)' }}>{demo.DEMODATE}</span>}
+              {demo.CREATEDBY && <span className="text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>by {demo.CREATEDBY.split('@')[0]}</span>}
             </div>
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">{tags.map(t => <TagChip key={t} tag={t} />)}</div>
@@ -404,16 +442,29 @@ export default function DemoDetail() {
           </div>
           <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
             <button onClick={handleShare}
-              className={`inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg border transition-colors ${shareCopied ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white hover:bg-zinc-50 text-zinc-700 border-zinc-200'}`}>
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors"
+              style={shareCopied
+                ? { background: 'rgba(52,211,153,0.15)', border: '1px solid rgba(52,211,153,0.30)', color: '#6ee7b7' }
+                : { background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.70)' }
+              }>
               <Share2 size={13} /> {shareCopied ? '¡Copiado!' : 'Share'}
             </button>
-            <button onClick={handleClone} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-white hover:bg-zinc-50 text-zinc-700 border border-zinc-200 transition-colors">
+            <button onClick={handleClone}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors"
+              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.70)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.11)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)' }}>
               <Copy size={13} /> Clone
             </button>
-            <Link to={`/demos/${id}/edit`} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white transition-colors">
+            <Link to={`/demos/${id}/edit`}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-brand hover:bg-brand-dark text-white transition-colors">
               <Pencil size={13} /> Edit
             </Link>
-            <button onClick={handleDelete} className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-white hover:bg-red-50 text-red-500 border border-zinc-200 hover:border-red-200 transition-colors">
+            <button onClick={handleDelete}
+              className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg transition-colors"
+              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(248,113,113,0.70)' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.10)'; e.currentTarget.style.borderColor = 'rgba(248,113,113,0.25)'; e.currentTarget.style.color = '#f87171' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.07)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(248,113,113,0.70)' }}>
               <Trash2 size={13} /> Delete
             </button>
           </div>
@@ -422,11 +473,18 @@ export default function DemoDetail() {
 
       {/* Tabs + Content */}
       <div className="px-6 py-6">
-        <div className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
-          <div className="flex border-b border-zinc-100 px-2 overflow-x-auto">
+        <div className="glass rounded-xl overflow-hidden">
+          <div className="flex px-2 overflow-x-auto" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
             {TABS.map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)}
-                className={`flex items-center gap-1.5 px-4 py-4 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px ${activeTab === tab ? 'border-brand text-brand' : 'border-transparent text-zinc-500 hover:text-zinc-800'}`}>
+                className="flex items-center gap-1.5 px-4 py-4 text-sm font-medium whitespace-nowrap transition-colors border-b-2 -mb-px"
+                style={{
+                  borderBottomColor: activeTab === tab ? '#4da6ff' : 'transparent',
+                  color: activeTab === tab ? '#4da6ff' : 'rgba(255,255,255,0.45)',
+                }}
+                onMouseEnter={e => { if (activeTab !== tab) e.currentTarget.style.color = 'rgba(255,255,255,0.75)' }}
+                onMouseLeave={e => { if (activeTab !== tab) e.currentTarget.style.color = 'rgba(255,255,255,0.45)' }}
+              >
                 {tab === 'Attachments' && <Paperclip size={13} />}
                 {tab === 'History' && <History size={13} />}
                 {tab}
@@ -438,12 +496,38 @@ export default function DemoDetail() {
             {activeTab === 'General' && (
               <div className="max-w-2xl">
                 <dl className="space-y-4">
-                  <div><dt className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Title</dt><dd className="mt-1 text-sm text-zinc-900 font-medium">{demo.TITLE}</dd></div>
-                  {demo.DESCRIPTION && <div><dt className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Description</dt><dd className="mt-1 text-sm text-zinc-700 whitespace-pre-wrap leading-relaxed">{demo.DESCRIPTION}</dd></div>}
-                  {tags.length > 0 && <div><dt className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Tags</dt><dd className="mt-2 flex flex-wrap gap-1.5">{tags.map(t => <TagChip key={t} tag={t} />)}</dd></div>}
-                  <div><dt className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Status</dt><dd className="mt-1"><StatusBadge status={demo.STATUS} /></dd></div>
-                  {demo.DEMODATE && <div><dt className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Demo Date</dt><dd className="mt-1 text-sm text-zinc-900">{demo.DEMODATE}</dd></div>}
-                  {demo.CREATEDAT && <div><dt className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Created</dt><dd className="mt-1 text-sm text-zinc-500">{new Date(demo.CREATEDAT).toLocaleString('es-ES')}</dd></div>}
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.38)' }}>Title</dt>
+                    <dd className="mt-1 text-sm text-white font-medium">{demo.TITLE}</dd>
+                  </div>
+                  {demo.DESCRIPTION && (
+                    <div>
+                      <dt className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.38)' }}>Description</dt>
+                      <dd className="mt-1 text-sm whitespace-pre-wrap leading-relaxed" style={{ color: 'rgba(255,255,255,0.70)' }}>{demo.DESCRIPTION}</dd>
+                    </div>
+                  )}
+                  {tags.length > 0 && (
+                    <div>
+                      <dt className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.38)' }}>Tags</dt>
+                      <dd className="mt-2 flex flex-wrap gap-1.5">{tags.map(t => <TagChip key={t} tag={t} />)}</dd>
+                    </div>
+                  )}
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.38)' }}>Status</dt>
+                    <dd className="mt-1"><StatusBadge status={demo.STATUS} /></dd>
+                  </div>
+                  {demo.DEMODATE && (
+                    <div>
+                      <dt className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.38)' }}>Demo Date</dt>
+                      <dd className="mt-1 text-sm text-white">{demo.DEMODATE}</dd>
+                    </div>
+                  )}
+                  {demo.CREATEDAT && (
+                    <div>
+                      <dt className="text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.38)' }}>Created</dt>
+                      <dd className="mt-1 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{new Date(demo.CREATEDAT).toLocaleString('es-ES')}</dd>
+                    </div>
+                  )}
                 </dl>
               </div>
             )}
@@ -469,19 +553,40 @@ export default function DemoDetail() {
 // ─── Systems Section ──────────────────────────────────────────────────────────
 
 function SystemsSection({ systems }) {
-  if (systems.length === 0) return <div className="text-center py-10 text-sm text-zinc-400">No systems associated with this demo.</div>
+  if (systems.length === 0) return (
+    <div className="text-center py-10 text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>No systems associated with this demo.</div>
+  )
   return (
-    <div className="overflow-hidden rounded-xl border border-zinc-100">
+    <div className="overflow-hidden rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
       <table className="w-full">
-        <thead><tr className="bg-zinc-50 border-b border-zinc-100">{['System', 'Type', 'Landscape', 'URL', 'Notes'].map(h => <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider">{h}</th>)}</tr></thead>
+        <thead>
+          <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            {['System', 'Type', 'Landscape', 'URL', 'Notes'].map(h => (
+              <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.40)' }}>{h}</th>
+            ))}
+          </tr>
+        </thead>
         <tbody>
           {systems.map((sys, i) => (
-            <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50 transition-colors">
-              <td className="px-4 py-3 text-sm font-medium text-zinc-800">{sys.NAME || '—'}</td>
+            <tr
+              key={i}
+              className="transition-colors"
+              style={{ borderBottom: i < systems.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+            >
+              <td className="px-4 py-3 text-sm font-medium text-white">{sys.NAME || '—'}</td>
               <td className="px-4 py-3">{sys.TYPE && <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${TYPE_COLORS[sys.TYPE] || TYPE_COLORS.OTHER}`}>{sys.TYPE}</span>}</td>
               <td className="px-4 py-3">{sys.LANDSCAPE && <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${LANDSCAPE_COLORS[sys.LANDSCAPE] || LANDSCAPE_COLORS.EXTERNAL}`}>{LANDSCAPE_LABELS[sys.LANDSCAPE] || sys.LANDSCAPE}</span>}</td>
-              <td className="px-4 py-3">{sys.URL ? <a href={sys.URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold text-brand bg-brand-light hover:bg-blue-100 rounded-lg border border-blue-200 transition-colors"><ExternalLink size={11} /> Open</a> : '—'}</td>
-              <td className="px-4 py-3 text-sm text-zinc-500">{sys.NOTES || '—'}</td>
+              <td className="px-4 py-3">{sys.URL
+                ? <a href={sys.URL} target="_blank" rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-lg transition-colors"
+                    style={{ background: 'rgba(77,166,255,0.12)', border: '1px solid rgba(77,166,255,0.25)', color: '#4da6ff' }}>
+                    <ExternalLink size={11} /> Open
+                  </a>
+                : '—'}
+              </td>
+              <td className="px-4 py-3 text-sm" style={{ color: 'rgba(255,255,255,0.45)' }}>{sys.NOTES || '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -492,15 +597,31 @@ function SystemsSection({ systems }) {
 
 function AssociationTable({ items, columns, emptyMsg }) {
   return items.length === 0 ? (
-    <div className="text-center py-10 text-sm text-zinc-400">{emptyMsg}</div>
+    <div className="text-center py-10 text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>{emptyMsg}</div>
   ) : (
-    <div className="overflow-hidden rounded-xl border border-zinc-100">
+    <div className="overflow-hidden rounded-xl" style={{ border: '1px solid rgba(255,255,255,0.07)' }}>
       <table className="w-full">
-        <thead><tr className="bg-zinc-50 border-b border-zinc-100">{columns.map(col => <th key={col.key} className="px-4 py-3 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider">{col.label}</th>)}</tr></thead>
+        <thead>
+          <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+            {columns.map(col => (
+              <th key={col.key} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.40)' }}>{col.label}</th>
+            ))}
+          </tr>
+        </thead>
         <tbody>
           {items.map((item, i) => (
-            <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50 transition-colors">
-              {columns.map(col => <td key={col.key} className="px-4 py-3 text-sm text-zinc-700">{col.render ? col.render(item[col.key]) : (item[col.key] || '—')}</td>)}
+            <tr
+              key={i}
+              className="transition-colors"
+              style={{ borderBottom: i < items.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)' }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
+            >
+              {columns.map(col => (
+                <td key={col.key} className="px-4 py-3 text-sm" style={{ color: 'rgba(255,255,255,0.65)' }}>
+                  {col.render ? col.render(item[col.key]) : (item[col.key] || '—')}
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>
