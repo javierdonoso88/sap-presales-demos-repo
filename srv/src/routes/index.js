@@ -12,5 +12,6 @@ router.use('/systems', require('./systems'));
 router.use('/clients', require('./clients'));
 router.use('/dashboard', require('./dashboard'));
 router.use('/admin', require('./admin'));
+router.use('/me', require('./me'));
 
 module.exports = router;

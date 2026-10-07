@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { LayoutDashboard, BookOpen, Database, CalendarDays, Search, Columns } from 'lucide-react'
+import { LayoutDashboard, BookOpen, Database, CalendarDays, Search, Columns, LogOut, Settings } from 'lucide-react'
 import CommandPalette from '../shared/CommandPalette'
 
 const navItems = [
@@ -13,6 +13,16 @@ const navItems = [
 
 export default function AppShell() {
   const [searchOpen, setSearchOpen] = useState(false)
+  const [user, setUser] = useState({ name: 'Presales User', initials: 'U', email: '', logoutUrl: '/' })
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef(null)
+
+  useEffect(() => {
+    fetch('/api/me')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setUser(data) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const handler = (e) => {
@@ -20,10 +30,17 @@ export default function AppShell() {
         e.preventDefault()
         setSearchOpen(true)
       }
+      if (menuOpen && menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false)
+      }
     }
     document.addEventListener('keydown', handler)
-    return () => document.removeEventListener('keydown', handler)
-  }, [])
+    document.addEventListener('mousedown', handler)
+    return () => {
+      document.removeEventListener('keydown', handler)
+      document.removeEventListener('mousedown', handler)
+    }
+  }, [menuOpen])
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -77,12 +94,36 @@ export default function AppShell() {
         </nav>
 
         {/* User */}
-        <div className="px-3 py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-          <div className="flex items-center gap-2.5 px-2">
+        <div className="px-3 py-3 relative" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }} ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen(v => !v)}
+            className="w-full flex items-center gap-2.5 px-2 rounded-lg py-1.5 transition-all hover:bg-white/5"
+          >
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
-              style={{ background: 'linear-gradient(135deg, #4da6ff, #0070f2)', boxShadow: '0 2px 8px rgba(77,166,255,0.30)' }}>U</div>
-            <span className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.45)' }}>Presales User</span>
-          </div>
+              style={{ background: 'linear-gradient(135deg, #4da6ff, #0070f2)', boxShadow: '0 2px 8px rgba(77,166,255,0.30)' }}>
+              {user.initials}
+            </div>
+            <div className="flex-1 min-w-0 text-left">
+              <div className="text-xs font-medium truncate" style={{ color: 'rgba(255,255,255,0.75)' }}>{user.name}</div>
+              {user.email && (
+                <div className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.30)', fontSize: '10px' }}>{user.email}</div>
+              )}
+            </div>
+          </button>
+
+          {menuOpen && (
+            <div className="absolute bottom-14 left-3 right-3 rounded-lg overflow-hidden z-50"
+              style={{ background: '#1e2330', border: '1px solid rgba(255,255,255,0.10)', boxShadow: '0 8px 24px rgba(0,0,0,0.4)' }}>
+              <a
+                href={user.logoutUrl}
+                className="flex items-center gap-2.5 px-3 py-2.5 text-xs transition-all hover:bg-white/5"
+                style={{ color: 'rgba(255,255,255,0.60)' }}
+              >
+                <LogOut size={13} />
+                Sign out
+              </a>
+            </div>
+          )}
         </div>
       </aside>
 
