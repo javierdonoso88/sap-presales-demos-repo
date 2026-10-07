@@ -26,17 +26,18 @@ export default function AppShell() {
   }, [])
 
   return (
-    <div className="flex h-screen overflow-hidden bg-surface-secondary">
-      <aside className="w-56 flex-shrink-0 bg-white border-r border-surface-border flex flex-col">
+    <div className="flex h-screen overflow-hidden">
+      <aside className="w-56 flex-shrink-0 flex flex-col glass-sidebar">
         {/* Logo */}
-        <div className="px-4 py-4 border-b border-surface-border">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 bg-brand rounded-md flex items-center justify-center flex-shrink-0">
+        <div className="px-4 py-5" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #4da6ff, #0070f2)', boxShadow: '0 4px 16px rgba(77,166,255,0.35)' }}>
               <span className="text-white text-xs font-bold">SP</span>
             </div>
             <div>
-              <div className="text-slate-900 font-semibold text-sm leading-tight">SAP Presales</div>
-              <div className="text-slate-400 text-xs">Demo Repository</div>
+              <div className="text-white font-semibold text-sm leading-tight">SAP Presales</div>
+              <div className="text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>Demo Repository</div>
             </div>
           </div>
         </div>
@@ -45,11 +46,13 @@ export default function AppShell() {
         <div className="px-3 pt-3">
           <button
             onClick={() => setSearchOpen(true)}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors border border-slate-200"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all"
+            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}
           >
-            <Search size={13} />
-            <span className="flex-1 text-left text-xs">Search…</span>
-            <kbd className="text-xs bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 font-mono leading-none text-slate-400">⌘K</kbd>
+            <Search size={13} style={{ color: 'rgba(255,255,255,0.35)' }} />
+            <span className="flex-1 text-left text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>Search…</span>
+            <kbd className="text-xs rounded px-1.5 py-0.5 font-mono leading-none"
+              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.09)', color: 'rgba(255,255,255,0.30)' }}>⌘K</kbd>
           </button>
         </div>
 
@@ -61,12 +64,11 @@ export default function AppShell() {
               to={to}
               end={end}
               className={({ isActive }) =>
-                `flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-brand-light text-brand font-semibold'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                `flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${
+                  isActive ? 'text-white glass-nav-active' : 'hover:text-white/80'
                 }`
               }
+              style={({ isActive }) => isActive ? {} : { color: 'rgba(255,255,255,0.48)' }}
             >
               <Icon size={15} />
               {label}
@@ -75,10 +77,11 @@ export default function AppShell() {
         </nav>
 
         {/* User */}
-        <div className="px-3 py-3 border-t border-surface-border">
+        <div className="px-3 py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.07)' }}>
           <div className="flex items-center gap-2.5 px-2">
-            <div className="w-7 h-7 rounded-full bg-brand flex items-center justify-center text-xs font-bold text-white flex-shrink-0">U</div>
-            <span className="text-slate-500 text-xs truncate">Presales User</span>
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0"
+              style={{ background: 'linear-gradient(135deg, #4da6ff, #0070f2)', boxShadow: '0 2px 8px rgba(77,166,255,0.30)' }}>U</div>
+            <span className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.45)' }}>Presales User</span>
           </div>
         </div>
       </aside>

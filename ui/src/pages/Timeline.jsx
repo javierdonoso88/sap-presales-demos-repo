@@ -28,6 +28,8 @@ function monthLabel(key) {
   return new Date(Number(y), Number(m) - 1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })
 }
 
+const selectCls = 'glass-input rounded-lg px-3 py-2 text-sm focus:outline-none'
+
 export default function Timeline() {
   const [filters, setFilters] = useState({ status: '', systemType: '' })
   const { demos, loading } = useDemos(filters)
@@ -42,23 +44,15 @@ export default function Timeline() {
     >
       <div className="space-y-5">
         {/* Filter bar */}
-        <div className="bg-white rounded-xl px-4 py-3 border border-zinc-100 shadow-sm flex gap-3 items-center flex-wrap">
-          <CalendarDays size={15} className="text-zinc-400 flex-shrink-0" />
-          <select
-            className="border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand text-zinc-700"
-            value={filters.status}
-            onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}
-          >
+        <div className="glass rounded-xl px-4 py-3 flex gap-3 items-center flex-wrap">
+          <CalendarDays size={15} className="text-brand flex-shrink-0" />
+          <select className={selectCls} value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}>
             <option value="">All statuses</option>
             <option value="READY">Ready</option>
             <option value="DRAFT">Draft</option>
             <option value="ARCHIVED">Archived</option>
           </select>
-          <select
-            className="border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand text-zinc-700"
-            value={filters.systemType}
-            onChange={e => setFilters(f => ({ ...f, systemType: e.target.value }))}
-          >
+          <select className={selectCls} value={filters.systemType} onChange={e => setFilters(f => ({ ...f, systemType: e.target.value }))}>
             <option value="">All system types</option>
             <option value="SAC">SAC</option>
             <option value="DATASPHERE">Datasphere</option>
@@ -67,58 +61,62 @@ export default function Timeline() {
             <option value="BW4HANA">BW/4HANA</option>
           </select>
           {hasFilters && (
-            <button onClick={() => setFilters({ status: '', systemType: '' })} className="text-xs font-semibold text-zinc-400 hover:text-zinc-700 ml-auto transition-colors">
+            <button onClick={() => setFilters({ status: '', systemType: '' })} className="text-xs font-semibold ml-auto transition-colors" style={{ color: 'rgba(255,255,255,0.38)' }}>
               Clear ✕
             </button>
           )}
-          {!hasFilters && <span className="ml-auto text-xs text-zinc-400">{demos.length} demos</span>}
+          {!hasFilters && <span className="ml-auto text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>{demos.length} demos</span>}
         </div>
 
         {loading ? (
           <div className="flex justify-center py-16"><Spinner size="lg" /></div>
         ) : demos.length === 0 ? (
-          <div className="bg-white rounded-xl border border-zinc-100 shadow-sm p-16 text-center">
-            <CalendarDays size={28} className="text-zinc-200 mx-auto mb-3" />
-            <p className="text-sm font-medium text-zinc-400">No demos found</p>
+          <div className="glass rounded-xl p-16 text-center">
+            <CalendarDays size={28} className="mx-auto mb-3" style={{ color: 'rgba(255,255,255,0.18)' }} />
+            <p className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.40)' }}>No demos found</p>
           </div>
         ) : (
           <div className="relative">
-            <div className="absolute left-[116px] top-2 bottom-2 w-px bg-zinc-200 pointer-events-none" />
+            <div className="absolute left-[116px] top-2 bottom-2 w-px pointer-events-none" style={{ background: 'rgba(255,255,255,0.10)' }} />
             <div className="space-y-8">
               {grouped.map(([month, monthDemos]) => (
                 <div key={month} className="flex">
                   <div className="w-[108px] flex-shrink-0 text-right pr-4 pt-1.5">
-                    <p className="text-xs font-semibold text-zinc-500 leading-snug">
+                    <p className="text-xs font-semibold leading-snug" style={{ color: 'rgba(255,255,255,0.45)' }}>
                       {monthLabel(month).split(' ').map((part, i) => (
                         <span key={i} className="block">{part}</span>
                       ))}
                     </p>
                   </div>
                   <div className="flex-shrink-0 w-[16px] flex justify-center pt-2">
-                    <div className="w-3 h-3 rounded-full bg-brand border-2 border-white shadow-sm" />
+                    <div className="w-3 h-3 rounded-full bg-brand" style={{ boxShadow: '0 0 8px rgba(77,166,255,0.60)', border: '2px solid rgba(255,255,255,0.12)' }} />
                   </div>
                   <div className="flex-1 pl-4 space-y-3">
                     {monthDemos.map(demo => (
                       <Link
                         key={demo.ID}
                         to={`/demos/${demo.ID}`}
-                        className="block bg-white rounded-xl border border-zinc-100 shadow-sm hover:shadow-md hover:border-brand/30 transition-all p-4 group"
+                        className="block glass rounded-xl p-4 group transition-all"
+                        style={{ textDecoration: 'none' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
                       >
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-zinc-800 group-hover:text-brand transition-colors truncate">
+                            <p className="text-sm font-medium text-white group-hover:text-brand transition-colors truncate">
                               {demo.TITLE}
                             </p>
-                            {demo.DEMODATE && <p className="text-xs text-zinc-400 mt-0.5">{demo.DEMODATE}</p>}
+                            {demo.DEMODATE && <p className="text-xs mt-0.5" style={{ color: 'rgba(255,255,255,0.38)' }}>{demo.DEMODATE}</p>}
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
                             {demo.clientCount > 0 && (
-                              <span className="inline-flex items-center gap-1 text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-100 px-2 py-0.5 rounded-full">
+                              <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+                                style={{ background: 'rgba(167,139,250,0.15)', color: '#c4b5fd', border: '1px solid rgba(167,139,250,0.25)' }}>
                                 <Users size={10} /> {demo.clientCount}
                               </span>
                             )}
                             <StatusBadge status={demo.STATUS} />
-                            <ChevronRight size={14} className="text-zinc-300 group-hover:text-brand transition-colors" />
+                            <ChevronRight size={14} className="group-hover:text-brand transition-colors" style={{ color: 'rgba(255,255,255,0.20)' }} />
                           </div>
                         </div>
                       </Link>

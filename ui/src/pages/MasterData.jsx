@@ -10,29 +10,31 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell
 } from 'recharts'
 
-const inputCls = 'w-full border border-zinc-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent'
-const labelCls = 'block text-xs font-semibold text-zinc-500 mb-1.5 uppercase tracking-wide'
+const inputCls = 'glass-input'
+const labelCls = 'block text-xs font-semibold mb-1.5 uppercase tracking-wide'
+const labelStyle = { color: 'rgba(255,255,255,0.40)' }
 
 const SYSTEM_TYPES = ['SAC', 'DATASPHERE', 'BDC', 'S4HANA', 'BW4HANA', 'OTHER']
 const LANDSCAPES = ['BDC_GA', 'GLA26Q2', 'SANDBOX', 'EXTERNAL']
-
 const LANDSCAPE_LABELS = { BDC_GA: 'BDC GA', GLA26Q2: 'GLA26Q2', SANDBOX: 'Sandbox', EXTERNAL: 'External' }
+
 const LANDSCAPE_COLORS = {
-  BDC_GA:   'bg-blue-100 text-blue-700',
-  GLA26Q2:  'bg-violet-100 text-violet-700',
-  SANDBOX:  'bg-amber-100 text-amber-700',
-  EXTERNAL: 'bg-zinc-100 text-zinc-600',
+  BDC_GA:   'bg-blue-400/15 text-blue-400',
+  GLA26Q2:  'bg-violet-400/15 text-violet-400',
+  SANDBOX:  'bg-amber-400/15 text-amber-400',
+  EXTERNAL: 'bg-white/10 text-white/50',
 }
 const TYPE_COLORS = {
-  SAC:        'bg-teal-100 text-teal-700',
-  DATASPHERE: 'bg-blue-100 text-blue-700',
-  BDC:        'bg-indigo-100 text-indigo-700',
-  S4HANA:     'bg-emerald-100 text-emerald-700',
-  BW4HANA:    'bg-orange-100 text-orange-700',
-  OTHER:      'bg-zinc-100 text-zinc-600',
+  SAC:        'bg-teal-400/15 text-teal-400',
+  DATASPHERE: 'bg-blue-400/15 text-blue-400',
+  BDC:        'bg-indigo-400/15 text-indigo-400',
+  S4HANA:     'bg-emerald-400/15 text-emerald-400',
+  BW4HANA:    'bg-orange-400/15 text-orange-400',
+  OTHER:      'bg-white/10 text-white/50',
 }
-
-const RESULT_COLORS = ['#10b981', '#2563eb', '#f59e0b', '#ef4444', '#8b5cf6', '#a1a1aa']
+const RESULT_COLORS = ['#34d399', '#60a5fa', '#fbbf24', '#f87171', '#c084fc', '#94a3b8']
+const GRID_COLOR = 'rgba(255,255,255,0.08)'
+const TICK_COLOR = 'rgba(255,255,255,0.38)'
 
 // ─── Generic CRUD Tab ─────────────────────────────────────────────────────────
 function CrudTab({ resource, columns, emptyForm, renderForm, onCountChange }) {
@@ -89,17 +91,20 @@ function CrudTab({ resource, columns, emptyForm, renderForm, onCountChange }) {
   return (
     <div>
       {error && (
-        <div className="mx-5 mt-4 bg-red-50 border border-red-200 rounded-xl p-3 text-red-700 text-sm">{error}</div>
+        <div className="mx-5 mt-4 rounded-xl p-3 text-sm" style={{ background: 'rgba(248,113,113,0.10)', border: '1px solid rgba(248,113,113,0.25)', color: '#fca5a5' }}>{error}</div>
       )}
       {showAdd && (
-        <div className="m-5 p-5 border-2 border-brand/20 rounded-xl bg-brand-light/30">
-          <h3 className="text-sm font-semibold text-zinc-800 mb-4">{editId ? 'Edit record' : 'Add new record'}</h3>
+        <div className="m-5 p-5 rounded-xl" style={{ background: 'rgba(77,166,255,0.08)', border: '1px solid rgba(77,166,255,0.20)' }}>
+          <h3 className="text-sm font-semibold text-white mb-4">{editId ? 'Edit record' : 'Add new record'}</h3>
           {renderForm(form, setForm)}
           <div className="flex gap-2 mt-4">
-            <button onClick={handleSave} disabled={saving} className="px-4 py-2 text-sm font-semibold rounded-lg bg-brand text-white hover:bg-brand-dark disabled:opacity-50 transition-colors">
+            <button onClick={handleSave} disabled={saving}
+              className="px-4 py-2 text-sm font-semibold rounded-lg bg-brand text-white hover:bg-brand-dark disabled:opacity-50 transition-colors">
               {saving ? 'Saving…' : 'Save'}
             </button>
-            <button onClick={handleCancel} className="px-4 py-2 text-sm font-semibold rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-600 transition-colors">
+            <button onClick={handleCancel}
+              className="px-4 py-2 text-sm font-semibold rounded-lg transition-colors"
+              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.70)' }}>
               Cancel
             </button>
           </div>
@@ -111,9 +116,9 @@ function CrudTab({ resource, columns, emptyForm, renderForm, onCountChange }) {
       ) : (
         <table className="w-full">
           <thead>
-            <tr className="bg-zinc-50 border-b border-zinc-100">
+            <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
               {columns.map(col => (
-                <th key={col.key} className="px-5 py-3 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider">{col.label}</th>
+                <th key={col.key} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.40)' }}>{col.label}</th>
               ))}
               <th className="px-5 py-3 text-right">
                 {!showAdd && (
@@ -126,22 +131,25 @@ function CrudTab({ resource, columns, emptyForm, renderForm, onCountChange }) {
             </tr>
           </thead>
           <tbody>
-            {items.map(item => (
-              <tr key={item.ID} className="group border-b border-zinc-50 last:border-0 hover:bg-zinc-50 transition-colors">
+            {items.map((item, i) => (
+              <tr key={item.ID} className="group transition-colors"
+                style={{ borderBottom: i < items.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                 {columns.map(col => (
-                  <td key={col.key} className="px-5 py-3.5 text-sm text-zinc-700">
+                  <td key={col.key} className="px-5 py-3.5 text-sm" style={{ color: 'rgba(255,255,255,0.70)' }}>
                     {col.render ? col.render(item[col.key], item) : (item[col.key] ?? '—')}
                   </td>
                 ))}
                 <td className="px-5 py-3.5 text-right">
                   <button onClick={() => handleEdit(item)} className="text-xs font-semibold text-brand hover:underline mr-4">Edit</button>
-                  <button onClick={() => handleDelete(item.ID)} className="text-xs font-semibold text-red-500 hover:underline">Delete</button>
+                  <button onClick={() => handleDelete(item.ID)} className="text-xs font-semibold hover:underline" style={{ color: '#f87171' }}>Delete</button>
                 </td>
               </tr>
             ))}
             {items.length === 0 && (
               <tr>
-                <td colSpan={columns.length + 1} className="px-5 py-10 text-center text-sm text-zinc-400">
+                <td colSpan={columns.length + 1} className="px-5 py-10 text-center text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>
                   No items yet. Click "+ Add" to create one.
                 </td>
               </tr>
@@ -180,30 +188,30 @@ function SystemsTab({ onCount }) {
         {
           key: 'ACTIVE', label: 'Active', field: 'active',
           render: v => v
-            ? <span className="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">Active</span>
-            : <span className="text-xs font-semibold text-zinc-400 bg-zinc-100 px-2 py-0.5 rounded-full">Inactive</span>
+            ? <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(52,211,153,0.14)', color: '#6ee7b7', border: '1px solid rgba(52,211,153,0.25)' }}>Active</span>
+            : <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.40)', border: '1px solid rgba(255,255,255,0.10)' }}>Inactive</span>
         },
       ]}
       emptyForm={{ name: '', type: 'SAC', landscape: 'BDC_GA', url: '', description: '', active: true }}
       renderForm={(form, setForm) => (
         <div className="grid grid-cols-2 gap-3">
-          <div><label className={labelCls}>Name *</label><input className={inputCls} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
-          <div><label className={labelCls}>Type *</label>
+          <div><label className={labelCls} style={labelStyle}>Name *</label><input className={inputCls} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
+          <div><label className={labelCls} style={labelStyle}>Type *</label>
             <select className={inputCls} value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))}>
               {SYSTEM_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
           </div>
-          <div><label className={labelCls}>Landscape</label>
+          <div><label className={labelCls} style={labelStyle}>Landscape</label>
             <select className={inputCls} value={form.landscape} onChange={e => setForm(f => ({ ...f, landscape: e.target.value }))}>
               <option value="">— none —</option>
               {LANDSCAPES.map(l => <option key={l} value={l}>{LANDSCAPE_LABELS[l]}</option>)}
             </select>
           </div>
-          <div><label className={labelCls}>URL</label><input className={inputCls} value={form.url} placeholder="https://…" onChange={e => setForm(f => ({ ...f, url: e.target.value }))} /></div>
-          <div className="col-span-2"><label className={labelCls}>Description</label><input className={inputCls} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
+          <div><label className={labelCls} style={labelStyle}>URL</label><input className={inputCls} value={form.url} placeholder="https://…" onChange={e => setForm(f => ({ ...f, url: e.target.value }))} /></div>
+          <div className="col-span-2"><label className={labelCls} style={labelStyle}>Description</label><input className={inputCls} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
           <div className="flex items-center gap-2 pt-1">
-            <input type="checkbox" id="sysActiveCheck" checked={!!form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} className="rounded" />
-            <label htmlFor="sysActiveCheck" className="text-sm font-medium text-zinc-700">Active</label>
+            <input type="checkbox" id="sysActiveCheck" checked={!!form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))} className="rounded bg-white/10 border-white/20" />
+            <label htmlFor="sysActiveCheck" className="text-sm font-medium" style={{ color: 'rgba(255,255,255,0.70)' }}>Active</label>
           </div>
         </div>
       )}
@@ -230,48 +238,51 @@ function ClientStatsModal({ client, open, onClose }) {
       {loading ? (
         <div className="flex justify-center py-10"><Spinner /></div>
       ) : !stats ? (
-        <p className="text-sm text-zinc-400 text-center py-8">No stats available.</p>
+        <p className="text-sm text-center py-8" style={{ color: 'rgba(255,255,255,0.35)' }}>No stats available.</p>
       ) : (
         <div className="space-y-6">
           <div>
-            <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">Result Distribution</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.40)' }}>Result Distribution</h3>
             {stats.byResult.length > 0 ? (
               <ResponsiveContainer width="100%" height={160}>
                 <BarChart data={stats.byResult} margin={{ top: 0, right: 10, left: -25, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" vertical={false} />
-                  <XAxis dataKey="result" tick={{ fontSize: 11, fill: '#a1a1aa' }} axisLine={false} tickLine={false} />
-                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#a1a1aa' }} axisLine={false} tickLine={false} />
-                  <Tooltip formatter={(v) => [v, 'Demos']} contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e4e4e7' }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={GRID_COLOR} vertical={false} />
+                  <XAxis dataKey="result" tick={{ fontSize: 11, fill: TICK_COLOR }} axisLine={false} tickLine={false} />
+                  <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: TICK_COLOR }} axisLine={false} tickLine={false} />
+                  <Tooltip formatter={(v) => [v, 'Demos']}
+                    contentStyle={{ fontSize: 12, borderRadius: 8, background: 'rgba(10,14,40,0.96)', border: '1px solid rgba(255,255,255,0.12)', color: 'white' }} />
                   <Bar dataKey="count" radius={[4, 4, 0, 0]}>
                     {stats.byResult.map((_, i) => <Cell key={i} fill={RESULT_COLORS[i % RESULT_COLORS.length]} />)}
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
             ) : (
-              <p className="text-sm text-zinc-400 text-center py-4">No presentations recorded.</p>
+              <p className="text-sm text-center py-4" style={{ color: 'rgba(255,255,255,0.35)' }}>No presentations recorded.</p>
             )}
           </div>
           {stats.demos.length > 0 && (
             <div>
-              <h3 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">Linked Demos ({stats.demos.length})</h3>
-              <div className="rounded-xl border border-zinc-100 overflow-hidden">
+              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.40)' }}>Linked Demos ({stats.demos.length})</h3>
+              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
                 <table className="w-full">
-                  <thead><tr className="bg-zinc-50 border-b border-zinc-100">
+                  <thead><tr style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                     {['Demo', 'Status', 'Presentation Date', 'Result'].map(h =>
-                      <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider">{h}</th>
+                      <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.40)' }}>{h}</th>
                     )}
                   </tr></thead>
                   <tbody>
                     {stats.demos.map((d, i) => (
-                      <tr key={i} className="border-b border-zinc-50 last:border-0 hover:bg-zinc-50 transition-colors">
+                      <tr key={i} className="transition-colors" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                         <td className="px-4 py-3">
                           <Link to={`/demos/${d.ID}`} onClick={onClose} className="text-sm font-medium text-brand hover:underline flex items-center gap-1">
                             {d.TITLE} <ChevronRight size={12} />
                           </Link>
                         </td>
                         <td className="px-4 py-3"><StatusBadge status={d.STATUS} /></td>
-                        <td className="px-4 py-3 text-sm text-zinc-500">{d.PRESENTATIONDATE || '—'}</td>
-                        <td className="px-4 py-3 text-sm text-zinc-500">{d.RESULT || '—'}</td>
+                        <td className="px-4 py-3 text-sm" style={{ color: 'rgba(255,255,255,0.50)' }}>{d.PRESENTATIONDATE || '—'}</td>
+                        <td className="px-4 py-3 text-sm" style={{ color: 'rgba(255,255,255,0.50)' }}>{d.RESULT || '—'}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -336,21 +347,23 @@ function ClientsTab({ onCount }) {
   return (
     <div>
       {error && (
-        <div className="mx-5 mt-4 bg-red-50 border border-red-200 rounded-xl p-3 text-red-700 text-sm">{error}</div>
+        <div className="mx-5 mt-4 rounded-xl p-3 text-sm" style={{ background: 'rgba(248,113,113,0.10)', border: '1px solid rgba(248,113,113,0.25)', color: '#fca5a5' }}>{error}</div>
       )}
       {showAdd && (
-        <div className="m-5 p-5 border-2 border-brand/20 rounded-xl bg-brand-light/30">
-          <h3 className="text-sm font-semibold text-zinc-800 mb-4">{editId ? 'Edit client' : 'Add new client'}</h3>
+        <div className="m-5 p-5 rounded-xl" style={{ background: 'rgba(77,166,255,0.08)', border: '1px solid rgba(77,166,255,0.20)' }}>
+          <h3 className="text-sm font-semibold text-white mb-4">{editId ? 'Edit client' : 'Add new client'}</h3>
           <div className="grid grid-cols-2 gap-3">
-            <div><label className={labelCls}>Name *</label><input className={inputCls} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
-            <div><label className={labelCls}>Industry</label><input className={inputCls} value={form.industry} onChange={e => setForm(f => ({ ...f, industry: e.target.value }))} /></div>
-            <div><label className={labelCls}>Country</label><input className={inputCls} value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} /></div>
-            <div><label className={labelCls}>Contact</label><input className={inputCls} value={form.contact} onChange={e => setForm(f => ({ ...f, contact: e.target.value }))} /></div>
-            <div className="col-span-2"><label className={labelCls}>Email</label><input type="email" className={inputCls} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
+            <div><label className={labelCls} style={labelStyle}>Name *</label><input className={inputCls} value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} /></div>
+            <div><label className={labelCls} style={labelStyle}>Industry</label><input className={inputCls} value={form.industry} onChange={e => setForm(f => ({ ...f, industry: e.target.value }))} /></div>
+            <div><label className={labelCls} style={labelStyle}>Country</label><input className={inputCls} value={form.country} onChange={e => setForm(f => ({ ...f, country: e.target.value }))} /></div>
+            <div><label className={labelCls} style={labelStyle}>Contact</label><input className={inputCls} value={form.contact} onChange={e => setForm(f => ({ ...f, contact: e.target.value }))} /></div>
+            <div className="col-span-2"><label className={labelCls} style={labelStyle}>Email</label><input type="email" className={inputCls} value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} /></div>
           </div>
           <div className="flex gap-2 mt-4">
             <button onClick={handleSave} disabled={saving} className="px-4 py-2 text-sm font-semibold rounded-lg bg-brand text-white hover:bg-brand-dark disabled:opacity-50 transition-colors">{saving ? 'Saving…' : 'Save'}</button>
-            <button onClick={() => { setForm({ name: '', industry: '', country: '', contact: '', email: '' }); setShowAdd(false); setEditId(null); setError(null) }} className="px-4 py-2 text-sm font-semibold rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-600 transition-colors">Cancel</button>
+            <button onClick={() => { setForm({ name: '', industry: '', country: '', contact: '', email: '' }); setShowAdd(false); setEditId(null); setError(null) }}
+              className="px-4 py-2 text-sm font-semibold rounded-lg transition-colors"
+              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'rgba(255,255,255,0.70)' }}>Cancel</button>
           </div>
         </div>
       )}
@@ -359,9 +372,9 @@ function ClientsTab({ onCount }) {
       ) : (
         <table className="w-full">
           <thead>
-            <tr className="bg-zinc-50 border-b border-zinc-100">
+            <tr style={{ background: 'rgba(255,255,255,0.03)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
               {['Name', 'Industry', 'Country', 'Email', 'Demos', 'Last Presentation'].map(h =>
-                <th key={h} className="px-5 py-3 text-left text-xs font-semibold text-zinc-500 uppercase tracking-wider">{h}</th>
+                <th key={h} className="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.40)' }}>{h}</th>
               )}
               <th className="px-5 py-3 text-right">
                 {!showAdd && (
@@ -374,29 +387,33 @@ function ClientsTab({ onCount }) {
             </tr>
           </thead>
           <tbody>
-            {clients.map(item => (
-              <tr key={item.ID} className="group border-b border-zinc-50 last:border-0 hover:bg-zinc-50 transition-colors">
-                <td className="px-5 py-3.5 text-sm font-medium text-zinc-800">{item.NAME}</td>
-                <td className="px-5 py-3.5 text-sm text-zinc-600">{item.INDUSTRY || '—'}</td>
-                <td className="px-5 py-3.5 text-sm text-zinc-600">{item.COUNTRY || '—'}</td>
-                <td className="px-5 py-3.5 text-sm text-zinc-600">{item.EMAIL || '—'}</td>
+            {clients.map((item, i) => (
+              <tr key={item.ID} className="group transition-colors"
+                style={{ borderBottom: i < clients.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <td className="px-5 py-3.5 text-sm font-medium text-white">{item.NAME}</td>
+                <td className="px-5 py-3.5 text-sm" style={{ color: 'rgba(255,255,255,0.60)' }}>{item.INDUSTRY || '—'}</td>
+                <td className="px-5 py-3.5 text-sm" style={{ color: 'rgba(255,255,255,0.60)' }}>{item.COUNTRY || '—'}</td>
+                <td className="px-5 py-3.5 text-sm" style={{ color: 'rgba(255,255,255,0.60)' }}>{item.EMAIL || '—'}</td>
                 <td className="px-5 py-3.5">
                   {item.demoCount > 0 ? (
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-100 px-2 py-0.5 rounded-full">{item.demoCount}</span>
-                  ) : <span className="text-xs text-zinc-300">—</span>}
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+                      style={{ background: 'rgba(167,139,250,0.15)', color: '#c4b5fd', border: '1px solid rgba(167,139,250,0.25)' }}>{item.demoCount}</span>
+                  ) : <span className="text-xs" style={{ color: 'rgba(255,255,255,0.18)' }}>—</span>}
                 </td>
-                <td className="px-5 py-3.5 text-sm text-zinc-500">{item.LAST_PRESENTATION || '—'}</td>
+                <td className="px-5 py-3.5 text-sm" style={{ color: 'rgba(255,255,255,0.50)' }}>{item.LAST_PRESENTATION || '—'}</td>
                 <td className="px-5 py-3.5 text-right">
-                  <button onClick={() => setStatsClient(item)} title="Analytics" className="text-xs font-semibold text-violet-600 hover:underline mr-3 inline-flex items-center gap-1">
+                  <button onClick={() => setStatsClient(item)} title="Analytics" className="text-xs font-semibold hover:underline mr-3 inline-flex items-center gap-1" style={{ color: '#c4b5fd' }}>
                     <BarChart2 size={12} /> Stats
                   </button>
                   <button onClick={() => handleEdit(item)} className="text-xs font-semibold text-brand hover:underline mr-3">Edit</button>
-                  <button onClick={() => handleDelete(item.ID)} className="text-xs font-semibold text-red-500 hover:underline">Delete</button>
+                  <button onClick={() => handleDelete(item.ID)} className="text-xs font-semibold hover:underline" style={{ color: '#f87171' }}>Delete</button>
                 </td>
               </tr>
             ))}
             {clients.length === 0 && (
-              <tr><td colSpan={7} className="px-5 py-10 text-center text-sm text-zinc-400">No clients yet. Click "+ Add" to create one.</td></tr>
+              <tr><td colSpan={7} className="px-5 py-10 text-center text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>No clients yet. Click "+ Add" to create one.</td></tr>
             )}
           </tbody>
         </table>
@@ -436,16 +453,17 @@ export default function MasterData() {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`bg-white rounded-xl p-4 border text-left flex items-center gap-3 transition-all hover:shadow-sm ${isActive ? 'border-brand/40 ring-2 ring-brand/10 shadow-sm' : 'border-zinc-100 shadow-sm'}`}
+                className="glass rounded-xl p-4 text-left flex items-center gap-3 transition-all"
+                style={isActive ? { border: '1px solid rgba(77,166,255,0.35)', boxShadow: '0 0 0 2px rgba(77,166,255,0.12)' } : {}}
               >
-                <div className={`p-2 rounded-lg ${isActive ? 'bg-brand-light' : 'bg-zinc-100'}`}>
-                  <Icon size={15} className={isActive ? 'text-brand' : 'text-zinc-500'} />
+                <div className="p-2 rounded-lg" style={{ background: isActive ? 'rgba(77,166,255,0.15)' : 'rgba(255,255,255,0.07)' }}>
+                  <Icon size={15} className={isActive ? 'text-brand' : ''} style={!isActive ? { color: 'rgba(255,255,255,0.50)' } : {}} />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-zinc-900 leading-none">
-                    {count !== null ? count : <span className="text-zinc-200">—</span>}
+                  <p className="text-2xl font-bold text-white leading-none">
+                    {count !== null ? count : <span style={{ color: 'rgba(255,255,255,0.18)' }}>—</span>}
                   </p>
-                  <p className="text-xs font-semibold text-zinc-400 uppercase tracking-wider mt-0.5">{tab.label}</p>
+                  <p className="text-xs font-semibold uppercase tracking-wider mt-0.5" style={{ color: 'rgba(255,255,255,0.40)' }}>{tab.label}</p>
                 </div>
               </button>
             )
@@ -453,19 +471,19 @@ export default function MasterData() {
         </div>
 
         {/* Tab content */}
-        <div className="bg-white rounded-xl border border-zinc-100 shadow-sm overflow-hidden">
-          <div className="flex border-b border-zinc-100 px-2">
+        <div className="glass rounded-xl overflow-hidden">
+          <div className="flex px-2" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
             {TAB_CONFIG.map(tab => {
               const Icon = tab.icon
               return (
                 <button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  className={`flex items-center gap-2 px-5 py-4 text-sm font-medium transition-colors border-b-2 -mb-px ${
-                    activeTab === tab.key
-                      ? 'border-brand text-brand'
-                      : 'border-transparent text-zinc-500 hover:text-zinc-800'
-                  }`}
+                  className="flex items-center gap-2 px-5 py-4 text-sm font-medium transition-colors border-b-2 -mb-px"
+                  style={{
+                    borderColor: activeTab === tab.key ? '#4da6ff' : 'transparent',
+                    color: activeTab === tab.key ? '#4da6ff' : 'rgba(255,255,255,0.45)',
+                  }}
                 >
                   <Icon size={14} />
                   {tab.label}
