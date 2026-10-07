@@ -7,9 +7,7 @@ const { query } = require('../config/db');
 // Mounted at /demos/:id/comments — req.params.id is the demo ID
 const router = Router({ mergeParams: true });
 
-function getUserEmail(user) {
-  return user.getEmail ? user.getEmail() : (user.email || 'unknown');
-}
+const { getUserEmail } = require('../utils/user');
 
 // GET /demos/:id/comments
 router.get('/', async (req, res, next) => {

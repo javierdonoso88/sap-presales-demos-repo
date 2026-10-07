@@ -151,45 +151,71 @@ function Step2Clients({ formData, onChange }) {
       <h2 className="text-lg font-semibold text-white border-b pb-2 mb-4" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>Client Presentations</h2>
       <p className="text-sm mb-4" style={{ color: 'rgba(255,255,255,0.45)' }}>Add the clients this demo was presented to.</p>
       <div className="space-y-4">
-        {formData.clients.map((c, i) => (
-          <div key={i} className="rounded-xl p-4 space-y-2" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
-            <div className="flex gap-2">
-              <select
-                value={c.clientId}
-                onChange={e => updateClient(i, 'clientId', e.target.value)}
-                className="glass-input flex-1 rounded-md px-2 py-1.5 text-sm"
-              >
-                <option value="">Select client...</option>
-                {clientsList.map(cl => (
-                  <option key={cl.ID} value={cl.ID}>{cl.NAME}</option>
-                ))}
-              </select>
-              <input
-                type="date"
-                value={c.presentationDate}
-                onChange={e => updateClient(i, 'presentationDate', e.target.value)}
-                className="glass-input rounded-md px-2 py-1.5 text-sm"
-              />
+        {formData.clients.map((c, i) => {
+          const selectedClient = clientsList.find(cl => cl.ID === c.clientId)
+          return (
+          <div key={i} className="rounded-xl p-4 space-y-3" style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            {/* Client selector — full row, name prominent */}
+            <div className="flex items-center gap-2">
+              <div className="flex-1 relative">
+                <select
+                  value={c.clientId}
+                  onChange={e => updateClient(i, 'clientId', e.target.value)}
+                  className="glass-input w-full rounded-md pl-3 pr-8 py-2 text-sm appearance-none"
+                  style={{ color: c.clientId ? 'white' : 'rgba(255,255,255,0.35)' }}
+                >
+                  <option value="">Select client…</option>
+                  {clientsList.map(cl => (
+                    <option key={cl.ID} value={cl.ID}>{cl.NAME}{cl.INDUSTRY ? ` — ${cl.INDUSTRY}` : ''}</option>
+                  ))}
+                </select>
+                <span className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-xs" style={{ color: 'rgba(255,255,255,0.35)' }}>▾</span>
+              </div>
               <button
                 onClick={() => removeClient(i)}
-                className="px-2 text-lg leading-none transition-colors"
-                style={{ color: 'rgba(248,113,113,0.70)' }}
-                onMouseEnter={e => { e.currentTarget.style.color = '#f87171' }}
-                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(248,113,113,0.70)' }}
+                className="flex-shrink-0 w-7 h-7 flex items-center justify-center rounded-lg transition-colors text-sm"
+                style={{ color: 'rgba(248,113,113,0.70)', background: 'rgba(248,113,113,0.08)' }}
+                onMouseEnter={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.background = 'rgba(248,113,113,0.15)' }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'rgba(248,113,113,0.70)'; e.currentTarget.style.background = 'rgba(248,113,113,0.08)' }}
               >
                 ✕
               </button>
             </div>
-            <select
-              value={c.result}
-              onChange={e => updateClient(i, 'result', e.target.value)}
-              className="glass-input w-full rounded-md px-2 py-1.5 text-sm"
-            >
-              <option value="VERY_INTERESTED">Very Interested</option>
-              <option value="INTERESTED">Interested</option>
-              <option value="NEUTRAL">Neutral</option>
-              <option value="NOT_INTERESTED">Not Interested</option>
-            </select>
+
+            {/* If client selected, show name badge */}
+            {selectedClient && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-lg" style={{ background: 'rgba(77,166,255,0.08)', border: '1px solid rgba(77,166,255,0.18)' }}>
+                <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0"
+                  style={{ background: 'linear-gradient(135deg, #4da6ff, #0070f2)', color: 'white' }}>
+                  {selectedClient.NAME?.[0]?.toUpperCase() || 'C'}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-semibold text-white truncate">{selectedClient.NAME}</div>
+                  {selectedClient.INDUSTRY && <div className="text-xs truncate" style={{ color: 'rgba(255,255,255,0.40)' }}>{selectedClient.INDUSTRY}{selectedClient.COUNTRY ? ` · ${selectedClient.COUNTRY}` : ''}</div>}
+                </div>
+              </div>
+            )}
+
+            {/* Date + Result row */}
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={c.presentationDate}
+                onChange={e => updateClient(i, 'presentationDate', e.target.value)}
+                className="glass-input flex-1 rounded-md px-2 py-1.5 text-sm"
+              />
+              <select
+                value={c.result}
+                onChange={e => updateClient(i, 'result', e.target.value)}
+                className="glass-input flex-1 rounded-md px-2 py-1.5 text-sm"
+              >
+                <option value="VERY_INTERESTED">Very Interested</option>
+                <option value="INTERESTED">Interested</option>
+                <option value="NEUTRAL">Neutral</option>
+                <option value="NOT_INTERESTED">Not Interested</option>
+              </select>
+            </div>
+
             <textarea
               value={c.feedback}
               onChange={e => updateClient(i, 'feedback', e.target.value)}
@@ -198,7 +224,8 @@ function Step2Clients({ formData, onChange }) {
               className="glass-input w-full rounded-md px-2 py-1.5 text-sm"
             />
           </div>
-        ))}
+          )
+        })}
         <button
           onClick={addClient}
           className="w-full rounded-xl py-3 text-sm font-medium transition-all border-2 border-dashed"

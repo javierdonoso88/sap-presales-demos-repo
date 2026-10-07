@@ -8,9 +8,7 @@ const router = Router();
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function getUserEmail(user) {
-  return user.getEmail ? user.getEmail() : (user.email || 'unknown');
-}
+const { getUserEmail } = require('../utils/user');
 
 async function getDemoById(id) {
   const demos = await query(

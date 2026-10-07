@@ -6,9 +6,7 @@ const { query } = require('../config/db');
 
 const router = Router({ mergeParams: true });
 
-function getUserEmail(user) {
-  return user.getEmail ? user.getEmail() : (user.email || 'unknown');
-}
+const { getUserEmail } = require('../utils/user');
 
 // ─── POST /demos/:id/share ────────────────────────────────────────────────────
 
