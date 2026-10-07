@@ -260,7 +260,7 @@ export default function Dashboard() {
                   <XAxis dataKey="type" tick={{ fontSize: 11, fill: '#a1a1aa', fontWeight: 600 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: '#a1a1aa' }} allowDecimals={false} axisLine={false} tickLine={false} />
                   <Tooltip content={<CustomTooltip />} cursor={{ fill: '#f8faff' }} />
-                  <Bar dataKey="count" fill="#2563eb" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="count" fill="#0070f2" radius={[6, 6, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (
@@ -282,15 +282,15 @@ export default function Dashboard() {
               <AreaChart data={byMonthFormatted} margin={{ top: 5, right: 10, left: -25, bottom: 0 }}>
                 <defs>
                   <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#2563eb" stopOpacity={0.15} />
-                    <stop offset="100%" stopColor="#2563eb" stopOpacity={0.01} />
+                    <stop offset="0%" stopColor="#0070f2" stopOpacity={0.15} />
+                    <stop offset="100%" stopColor="#0070f2" stopOpacity={0.01} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f4f4f5" vertical={false} />
                 <XAxis dataKey="label" tick={{ fontSize: 11, fill: '#a1a1aa', fontWeight: 600 }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 11, fill: '#a1a1aa' }} allowDecimals={false} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Area type="monotone" dataKey="count" stroke="#2563eb" strokeWidth={2} fill="url(#areaGrad)" dot={{ fill: '#2563eb', strokeWidth: 0, r: 3 }} activeDot={{ r: 5, strokeWidth: 0 }} />
+                <Area type="monotone" dataKey="count" stroke="#0070f2" strokeWidth={2} fill="url(#areaGrad)" dot={{ fill: '#0070f2', strokeWidth: 0, r: 3 }} activeDot={{ r: 5, strokeWidth: 0 }} />
               </AreaChart>
             </ResponsiveContainer>
           ) : (
@@ -312,7 +312,7 @@ export default function Dashboard() {
                   <XAxis type="number" tick={{ fontSize: 11, fill: '#a1a1aa' }} axisLine={false} tickLine={false} allowDecimals={false} />
                   <YAxis type="category" dataKey="user" tick={{ fontSize: 11, fill: '#52525b', fontWeight: 500 }} axisLine={false} tickLine={false} width={80} />
                   <Tooltip formatter={(v) => [`${v} demos`, 'Count']} contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid #e4e4e7' }} />
-                  <Bar dataKey="count" fill="#2563eb" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="count" fill="#0070f2" radius={[0, 4, 4, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             ) : (

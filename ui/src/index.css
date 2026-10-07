@@ -6,7 +6,7 @@
   * { box-sizing: border-box; }
   html { font-feature-settings: 'cv11', 'ss01'; }
   body {
-    @apply bg-zinc-50 text-zinc-900 font-sans;
+    @apply bg-surface-secondary text-slate-900 font-sans;
     margin: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -14,8 +14,8 @@
 }
 
 @layer utilities {
-  .scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+  .scrollbar-thin::-webkit-scrollbar { width: 5px; height: 5px; }
   .scrollbar-thin::-webkit-scrollbar-track { @apply bg-transparent; }
-  .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-zinc-200 rounded-full; }
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover { @apply bg-zinc-300; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { @apply bg-slate-200 rounded-full; }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover { @apply bg-slate-300; }
 }

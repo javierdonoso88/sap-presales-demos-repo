@@ -26,57 +26,64 @@ export default function AppShell() {
   }, [])
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <aside className="w-60 flex-shrink-0 bg-sidebar-bg flex flex-col">
+    <div className="flex h-screen overflow-hidden bg-surface-secondary">
+      <aside className="w-56 flex-shrink-0 bg-white border-r border-surface-border flex flex-col">
         {/* Logo */}
-        <div className="px-4 py-5 border-b border-zinc-800">
-          <div className="text-white font-bold text-base leading-tight tracking-tight">SAP Presales</div>
-          <div className="text-zinc-400 text-xs mt-0.5">Demo Repository</div>
+        <div className="px-4 py-4 border-b border-surface-border">
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 bg-brand rounded-md flex items-center justify-center flex-shrink-0">
+              <span className="text-white text-xs font-bold">SP</span>
+            </div>
+            <div>
+              <div className="text-slate-900 font-semibold text-sm leading-tight">SAP Presales</div>
+              <div className="text-slate-400 text-xs">Demo Repository</div>
+            </div>
+          </div>
         </div>
 
         {/* Search */}
         <div className="px-3 pt-3">
           <button
             onClick={() => setSearchOpen(true)}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-zinc-400 hover:text-white hover:bg-sidebar-hover transition-colors border border-zinc-800"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors border border-slate-200"
           >
             <Search size={13} />
             <span className="flex-1 text-left text-xs">Search…</span>
-            <kbd className="text-xs bg-zinc-900 border border-zinc-700 rounded px-1.5 py-0.5 font-mono leading-none text-zinc-500">⌘K</kbd>
+            <kbd className="text-xs bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 font-mono leading-none text-slate-400">⌘K</kbd>
           </button>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 p-3 space-y-0.5 mt-2">
+        <nav className="flex-1 px-2 py-3 space-y-0.5 mt-1">
           {navItems.map(({ to, icon: Icon, label, end }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                `flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-brand text-white'
-                    : 'text-sidebar-text hover:text-white hover:bg-sidebar-hover'
+                    ? 'bg-brand-light text-brand font-semibold'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`
               }
             >
-              <Icon size={16} />
+              <Icon size={15} />
               {label}
             </NavLink>
           ))}
         </nav>
 
         {/* User */}
-        <div className="p-4 border-t border-zinc-800">
-          <div className="flex items-center gap-2.5">
+        <div className="px-3 py-3 border-t border-surface-border">
+          <div className="flex items-center gap-2.5 px-2">
             <div className="w-7 h-7 rounded-full bg-brand flex items-center justify-center text-xs font-bold text-white flex-shrink-0">U</div>
-            <span className="text-zinc-400 text-xs truncate">Presales User</span>
+            <span className="text-slate-500 text-xs truncate">Presales User</span>
           </div>
         </div>
       </aside>
 
-      <main className="flex-1 overflow-y-auto bg-zinc-50 scrollbar-thin">
+      <main className="flex-1 overflow-y-auto scrollbar-thin">
         <Outlet />
       </main>
 

@@ -271,7 +271,7 @@ export default function DemosList() {
                           {demo.TITLE}
                         </Link>
                       </td>
-                      <td className="px-4 py-4 text-sm text-zinc-500">{demo.DEMODATE || '—'}</td>
+                      <td className="px-4 py-4 text-sm text-zinc-500 whitespace-nowrap">{demo.DEMODATE || '—'}</td>
                       <td className="px-4 py-4"><StatusBadge status={demo.STATUS} /></td>
                       <td className="px-4 py-4 w-36">
                         {demo.completeness != null ? <CompletenessBar score={demo.completeness} compact /> : <span className="text-xs text-zinc-300">—</span>}
