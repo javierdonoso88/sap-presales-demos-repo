@@ -146,47 +146,50 @@ export default function DemosList() {
         )}
 
         {/* Filter bar */}
-        <div className="glass rounded-xl px-4 py-3 flex gap-3 items-center flex-wrap">
-          <div className="relative flex-1 min-w-[180px]">
-            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.35)' }} />
+        <div className="glass rounded-xl px-4 py-2.5 flex gap-2 items-center">
+          <div className="relative" style={{ minWidth: 0, flex: '1 1 180px', maxWidth: '280px' }}>
+            <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2" style={{ color: 'rgba(255,255,255,0.35)' }} />
             <input
               type="text"
-              placeholder="Search title, description, tags…"
-              className="glass-input w-full pl-8 pr-3 py-2 text-sm rounded-lg"
+              placeholder="Search…"
+              className="glass-input w-full pl-7 pr-2 py-1.5 text-sm rounded-md"
               onChange={e => setFilters(f => ({ ...f, search: e.target.value }))}
             />
           </div>
-          <select className={selectCls} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}>
-            <option value="">All statuses</option>
+          <select className="glass-input flex-shrink-0 rounded-md py-1.5 px-2.5 text-sm" style={{ width: 'auto' }}
+            onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}>
+            <option value="">Status</option>
             <option value="READY">Ready</option>
             <option value="DRAFT">Draft</option>
             <option value="ARCHIVED">Archived</option>
           </select>
-          <select className={selectCls} onChange={e => setFilters(f => ({ ...f, systemType: e.target.value }))}>
-            <option value="">All system types</option>
+          <select className="glass-input flex-shrink-0 rounded-md py-1.5 px-2.5 text-sm" style={{ width: 'auto' }}
+            onChange={e => setFilters(f => ({ ...f, systemType: e.target.value }))}>
+            <option value="">System</option>
             <option value="SAC">SAC</option>
             <option value="DATASPHERE">Datasphere</option>
             <option value="BDC">BDC</option>
             <option value="S4HANA">S/4HANA</option>
             <option value="BW4HANA">BW/4HANA</option>
           </select>
-          <select className={selectCls} onChange={e => setFilters(f => ({ ...f, landscape: e.target.value }))}>
-            <option value="">All landscapes</option>
+          <select className="glass-input flex-shrink-0 rounded-md py-1.5 px-2.5 text-sm" style={{ width: 'auto' }}
+            onChange={e => setFilters(f => ({ ...f, landscape: e.target.value }))}>
+            <option value="">Landscape</option>
             {Object.entries(LANDSCAPE_LABELS).map(([k, v]) => (
               <option key={k} value={k}>{v}</option>
             ))}
           </select>
           {hasFilters && (
             <button onClick={() => setFilters({ status: '', search: '', systemType: '', landscape: '' })}
-              className="text-xs font-semibold transition-colors" style={{ color: 'rgba(255,255,255,0.38)' }}>
-              Clear ✕
+              className="flex-shrink-0 text-xs font-semibold transition-colors" style={{ color: 'rgba(255,255,255,0.38)' }}>
+              ✕
             </button>
           )}
           {demos.length > 0 && !loading && (
             <button onClick={() => exportCSV(demos)}
-              className="ml-auto inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg transition-colors flex-shrink-0"
+              className="ml-auto flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors"
               style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.10)', color: 'rgba(255,255,255,0.60)' }}>
-              <Download size={13} /> Export CSV
+              <Download size={12} /> Export
             </button>
           )}
         </div>

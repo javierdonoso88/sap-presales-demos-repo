@@ -28,7 +28,6 @@ function monthLabel(key) {
   return new Date(Number(y), Number(m) - 1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' })
 }
 
-const selectCls = 'glass-input rounded-lg px-3 py-2 text-sm focus:outline-none'
 
 export default function Timeline() {
   const [filters, setFilters] = useState({ status: '', systemType: '' })
@@ -44,16 +43,18 @@ export default function Timeline() {
     >
       <div className="space-y-5">
         {/* Filter bar */}
-        <div className="glass rounded-xl px-4 py-3 flex gap-3 items-center flex-wrap">
-          <CalendarDays size={15} className="text-brand flex-shrink-0" />
-          <select className={selectCls} value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}>
-            <option value="">All statuses</option>
+        <div className="glass rounded-xl px-4 py-2.5 flex gap-2 items-center">
+          <CalendarDays size={14} className="text-brand flex-shrink-0" />
+          <select className="glass-input flex-shrink-0 rounded-md py-1.5 px-2.5 text-sm" style={{ width: 'auto' }}
+            value={filters.status} onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}>
+            <option value="">Status</option>
             <option value="READY">Ready</option>
             <option value="DRAFT">Draft</option>
             <option value="ARCHIVED">Archived</option>
           </select>
-          <select className={selectCls} value={filters.systemType} onChange={e => setFilters(f => ({ ...f, systemType: e.target.value }))}>
-            <option value="">All system types</option>
+          <select className="glass-input flex-shrink-0 rounded-md py-1.5 px-2.5 text-sm" style={{ width: 'auto' }}
+            value={filters.systemType} onChange={e => setFilters(f => ({ ...f, systemType: e.target.value }))}>
+            <option value="">System</option>
             <option value="SAC">SAC</option>
             <option value="DATASPHERE">Datasphere</option>
             <option value="BDC">BDC</option>
@@ -61,11 +62,12 @@ export default function Timeline() {
             <option value="BW4HANA">BW/4HANA</option>
           </select>
           {hasFilters && (
-            <button onClick={() => setFilters({ status: '', systemType: '' })} className="text-xs font-semibold ml-auto transition-colors" style={{ color: 'rgba(255,255,255,0.38)' }}>
-              Clear ✕
+            <button onClick={() => setFilters({ status: '', systemType: '' })}
+              className="flex-shrink-0 text-xs font-semibold transition-colors" style={{ color: 'rgba(255,255,255,0.38)' }}>
+              ✕
             </button>
           )}
-          {!hasFilters && <span className="ml-auto text-xs" style={{ color: 'rgba(255,255,255,0.38)' }}>{demos.length} demos</span>}
+          <span className="ml-auto text-xs flex-shrink-0" style={{ color: 'rgba(255,255,255,0.38)' }}>{demos.length} demos</span>
         </div>
 
         {loading ? (
