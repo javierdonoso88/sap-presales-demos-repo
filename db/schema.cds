@@ -81,3 +81,10 @@ entity ShareTokens {
   CREATEDBY    : String(255);
   EXPIRESAT    : Timestamp;
 }
+
+entity DemoComments : cuid {
+  DEMO_ID   : UUID;
+  COMMENT   : String(2000);
+  CREATEDAT : Timestamp;
+  CREATEDBY : String(255);
+}

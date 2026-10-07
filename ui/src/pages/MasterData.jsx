@@ -37,7 +37,7 @@ const GRID_COLOR = 'rgba(255,255,255,0.08)'
 const TICK_COLOR = 'rgba(255,255,255,0.38)'
 
 // ─── Generic CRUD Tab ─────────────────────────────────────────────────────────
-function CrudTab({ resource, columns, emptyForm, renderForm, onCountChange }) {
+function CrudTab({ resource, columns, emptyForm, renderForm, onCountChange, extraActions }) {
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [showAdd, setShowAdd] = useState(false)
@@ -142,6 +142,7 @@ function CrudTab({ resource, columns, emptyForm, renderForm, onCountChange }) {
                   </td>
                 ))}
                 <td className="px-5 py-3.5 text-right">
+                  {extraActions?.(item)}
                   <button onClick={() => handleEdit(item)} className="text-xs font-semibold text-brand hover:underline mr-4">Edit</button>
                   <button onClick={() => handleDelete(item.ID)} className="text-xs font-semibold hover:underline" style={{ color: '#f87171' }}>Delete</button>
                 </td>
@@ -163,11 +164,20 @@ function CrudTab({ resource, columns, emptyForm, renderForm, onCountChange }) {
 
 // ─── Systems Tab ──────────────────────────────────────────────────────────────
 function SystemsTab({ onCount }) {
+  const [statsSystem, setStatsSystem] = useState(null)
+
   return (
-    <CrudTab
-      resource="systems"
-      onCountChange={onCount}
-      columns={[
+    <>
+      <CrudTab
+        resource="systems"
+        onCountChange={onCount}
+        extraActions={(item) => (
+          <button onClick={() => setStatsSystem(item)} title="Analytics"
+            className="text-xs font-semibold hover:underline mr-3 inline-flex items-center gap-1" style={{ color: '#c4b5fd' }}>
+            <BarChart2 size={12} /> Stats
+          </button>
+        )}
+        columns={[
         { key: 'NAME', label: 'Name', field: 'name' },
         {
           key: 'TYPE', label: 'Type', field: 'type',
@@ -215,7 +225,82 @@ function SystemsTab({ onCount }) {
           </div>
         </div>
       )}
-    />
+      />
+      <SystemStatsModal system={statsSystem} open={!!statsSystem} onClose={() => setStatsSystem(null)} />
+    </>
+  )
+}
+
+// ─── System Stats Modal ───────────────────────────────────────────────────────
+function SystemStatsModal({ system, open, onClose }) {
+  const [stats, setStats] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!open || !system) return
+    setLoading(true)
+    api.get(`/systems/${system.ID}/stats`)
+      .then(res => setStats(res.data))
+      .catch(() => setStats(null))
+      .finally(() => setLoading(false))
+  }, [open, system])
+
+  return (
+    <Modal open={open} onClose={onClose} title={`Analytics — ${system?.NAME}`}>
+      {loading ? (
+        <div className="flex justify-center py-10"><Spinner /></div>
+      ) : !stats ? (
+        <p className="text-sm text-center py-8" style={{ color: 'rgba(255,255,255,0.35)' }}>No stats available.</p>
+      ) : (
+        <div className="space-y-6">
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: 'Demos', value: stats.demoCount },
+              { label: 'Presentations', value: stats.presentationCount },
+              { label: 'Success rate', value: stats.successRate != null ? `${stats.successRate}%` : '—' },
+            ].map(({ label, value }) => (
+              <div key={label} className="rounded-xl p-4 text-center" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                <p className="text-2xl font-bold text-white">{value ?? 0}</p>
+                <p className="text-xs font-semibold uppercase tracking-wider mt-1" style={{ color: 'rgba(255,255,255,0.40)' }}>{label}</p>
+              </div>
+            ))}
+          </div>
+          {stats.demos?.length > 0 && (
+            <div>
+              <h3 className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'rgba(255,255,255,0.40)' }}>Linked Demos ({stats.demos.length})</h3>
+              <div className="rounded-xl overflow-hidden" style={{ border: '1px solid rgba(255,255,255,0.08)' }}>
+                <table className="w-full">
+                  <thead><tr style={{ background: 'rgba(255,255,255,0.04)', borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                    {['Demo', 'Status', 'Date', 'Presentations'].map(h =>
+                      <th key={h} className="px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider" style={{ color: 'rgba(255,255,255,0.40)' }}>{h}</th>
+                    )}
+                  </tr></thead>
+                  <tbody>
+                    {stats.demos.map((d, i) => (
+                      <tr key={i} className="transition-colors" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}
+                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
+                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                        <td className="px-4 py-3">
+                          <Link to={`/demos/${d.ID}`} onClick={onClose} className="text-sm font-medium text-brand hover:underline flex items-center gap-1">
+                            {d.TITLE} <ChevronRight size={12} />
+                          </Link>
+                        </td>
+                        <td className="px-4 py-3"><StatusBadge status={d.STATUS} /></td>
+                        <td className="px-4 py-3 text-sm" style={{ color: 'rgba(255,255,255,0.50)' }}>{d.DEMODATE || '—'}</td>
+                        <td className="px-4 py-3 text-sm font-semibold" style={{ color: 'rgba(255,255,255,0.65)' }}>{d.presentationCount}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+          {(!stats.demos || stats.demos.length === 0) && (
+            <p className="text-sm text-center py-4" style={{ color: 'rgba(255,255,255,0.35)' }}>This system has not been used in any demo.</p>
+          )}
+        </div>
+      )}
+    </Modal>
   )
 }
 

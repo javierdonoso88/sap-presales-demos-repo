@@ -27,6 +27,55 @@ router.get('/', async (req, res, next) => {
   }
 });
 
+// ─── GET /systems/:id/stats ───────────────────────────────────────────────────
+
+router.get('/:id/stats', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const summary = await query(`
+      SELECT
+        COUNT(DISTINCT ds.DEMO_ID) AS DEMO_COUNT,
+        COUNT(dc.CLIENT_ID)        AS PRESENTATION_COUNT,
+        SUM(CASE WHEN dc.RESULT IN ('VERY_INTERESTED','INTERESTED') THEN 1 ELSE 0 END) AS POSITIVE_COUNT
+      FROM SAP_PRESALES_DEMOS_DEMOSYSTEMS ds
+      JOIN SAP_PRESALES_DEMOS_DEMOS d ON d.ID = ds.DEMO_ID
+      LEFT JOIN SAP_PRESALES_DEMOS_DEMOCLIENTS dc ON dc.DEMO_ID = ds.DEMO_ID
+      WHERE ds.SYSTEM_ID = ?
+    `, [id]);
+
+    const demos = await query(`
+      SELECT d.ID, d.TITLE, d.STATUS, d.DEMODATE,
+             COUNT(dc.CLIENT_ID) AS PRESENTATION_COUNT
+      FROM SAP_PRESALES_DEMOS_DEMOSYSTEMS ds
+      JOIN SAP_PRESALES_DEMOS_DEMOS d ON d.ID = ds.DEMO_ID
+      LEFT JOIN SAP_PRESALES_DEMOS_DEMOCLIENTS dc ON dc.DEMO_ID = ds.DEMO_ID
+      WHERE ds.SYSTEM_ID = ?
+      GROUP BY d.ID, d.TITLE, d.STATUS, d.DEMODATE
+      ORDER BY d.DEMODATE DESC NULLS LAST
+    `, [id]);
+
+    const s = summary[0];
+    const demoCount        = Number(s.DEMO_COUNT);
+    const presentationCount = Number(s.PRESENTATION_COUNT);
+    const positiveCount    = Number(s.POSITIVE_COUNT);
+    const successRate = presentationCount > 0
+      ? Math.round((positiveCount / presentationCount) * 100)
+      : null;
+
+    res.json({
+      data: {
+        demoCount,
+        presentationCount,
+        successRate,
+        demos: demos.map(d => ({ ...d, presentationCount: Number(d.PRESENTATION_COUNT) })),
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ─── POST /systems ────────────────────────────────────────────────────────────
 
 router.post('/', async (req, res, next) => {

@@ -11,10 +11,10 @@ import {
   Pencil, Trash2, Download, Upload, X, FileText, File,
   Image, ChevronRight, Paperclip, AlertCircle, Copy,
   ExternalLink, CheckCircle2, XCircle, ArrowRight,
-  Share2, Clock, Eye, History
+  Share2, Clock, Eye, History, MessageSquare, Send, Trash
 } from 'lucide-react'
 
-const TABS = ['General', 'Systems', 'Clients', 'Attachments', 'History']
+const TABS = ['General', 'Systems', 'Clients', 'Attachments', 'History', 'Comments']
 
 const TYPE_COLORS = {
   SAC: 'bg-teal-400/15 text-teal-300', DATASPHERE: 'bg-blue-400/15 text-blue-300',
@@ -312,6 +312,118 @@ function HistoryTab({ demoId }) {
   )
 }
 
+// ─── Comments Tab ─────────────────────────────────────────────────────────────
+
+function CommentsTab({ demoId }) {
+  const [comments, setComments] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [text, setText] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState(null)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await api.get(`/demos/${demoId}/comments`)
+      setComments(res.data || [])
+    } catch { setError('Failed to load comments') }
+    finally { setLoading(false) }
+  }, [demoId])
+
+  useEffect(() => { load() }, [load])
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!text.trim()) return
+    setSubmitting(true); setError(null)
+    try {
+      await api.post(`/demos/${demoId}/comments`, { comment: text.trim() })
+      setText('')
+      await load()
+    } catch (err) { setError(err.error || 'Failed to post comment') }
+    finally { setSubmitting(false) }
+  }
+
+  const handleDelete = async (commentId) => {
+    if (!window.confirm('Delete this comment?')) return
+    try {
+      await api.delete(`/demos/${demoId}/comments/${commentId}`)
+      setComments(prev => prev.filter(c => c.ID !== commentId))
+    } catch (err) { setError(err.error || 'Delete failed') }
+  }
+
+  return (
+    <div className="space-y-5">
+      {error && (
+        <div className="flex items-center gap-2 rounded-xl px-4 py-3 text-sm" style={{ background: 'rgba(248,113,113,0.12)', border: '1px solid rgba(248,113,113,0.25)', color: '#fca5a5' }}>
+          <AlertCircle size={15} /><span>{error}</span>
+          <button onClick={() => setError(null)} className="ml-auto opacity-70 hover:opacity-100 transition-opacity"><X size={14} /></button>
+        </div>
+      )}
+
+      {/* Comment input */}
+      <form onSubmit={handleSubmit} className="glass rounded-xl p-4">
+        <textarea
+          value={text}
+          onChange={e => setText(e.target.value)}
+          placeholder="Añade un comentario interno…"
+          rows={3}
+          className="glass-input w-full resize-none text-sm"
+          style={{ minHeight: 80 }}
+        />
+        <div className="flex justify-end mt-3">
+          <button type="submit" disabled={submitting || !text.trim()}
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg bg-brand hover:bg-brand-dark text-white disabled:opacity-40 transition-colors">
+            <Send size={13} /> {submitting ? 'Enviando…' : 'Comentar'}
+          </button>
+        </div>
+      </form>
+
+      {/* Comments list */}
+      {loading ? (
+        <div className="flex justify-center py-8"><Spinner /></div>
+      ) : comments.length === 0 ? (
+        <div className="rounded-xl p-10 text-center" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <MessageSquare size={22} className="mx-auto mb-2" style={{ color: 'rgba(255,255,255,0.18)' }} />
+          <p className="text-sm" style={{ color: 'rgba(255,255,255,0.35)' }}>Todavía no hay comentarios.</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {comments.map(c => (
+            <div key={c.ID} className="glass rounded-xl p-4 group"
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              onMouseLeave={e => e.currentTarget.style.background = ''}>
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold"
+                    style={{ background: 'rgba(77,166,255,0.18)', color: '#4da6ff' }}>
+                    {c.CREATEDBY ? c.CREATEDBY.charAt(0).toUpperCase() : '?'}
+                  </div>
+                  <div>
+                    <span className="text-xs font-semibold text-white">{c.CREATEDBY?.split('@')[0] || 'Unknown'}</span>
+                    <span className="text-xs ml-2" style={{ color: 'rgba(255,255,255,0.30)' }}>
+                      {c.CREATEDAT ? new Date(c.CREATEDAT).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : ''}
+                    </span>
+                  </div>
+                </div>
+                <button onClick={() => handleDelete(c.ID)}
+                  className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg transition-all flex-shrink-0"
+                  style={{ color: 'rgba(248,113,113,0.60)' }}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'rgba(248,113,113,0.10)'; e.currentTarget.style.color = '#f87171' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(248,113,113,0.60)' }}
+                  title="Delete comment">
+                  <Trash size={13} />
+                </button>
+              </div>
+              <p className="text-sm mt-2.5 whitespace-pre-wrap leading-relaxed" style={{ color: 'rgba(255,255,255,0.70)' }}>{c.COMMENT}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Status Transition Modal ──────────────────────────────────────────────────
 
 function StatusModal({ open, onClose, demo, onSuccess }) {
@@ -487,6 +599,7 @@ export default function DemoDetail() {
               >
                 {tab === 'Attachments' && <Paperclip size={13} />}
                 {tab === 'History' && <History size={13} />}
+                {tab === 'Comments' && <MessageSquare size={13} />}
                 {tab}
               </button>
             ))}
@@ -541,6 +654,7 @@ export default function DemoDetail() {
             )}
             {activeTab === 'Attachments' && <AttachmentsTab demoId={id} />}
             {activeTab === 'History' && <HistoryTab demoId={id} />}
+            {activeTab === 'Comments' && <CommentsTab demoId={id} />}
           </div>
         </div>
       </div>
