@@ -3,6 +3,7 @@
 const { Router } = require('express');
 const { v4: uuidv4 } = require('uuid');
 const { query } = require('../config/db');
+const { getUserEmail } = require('../utils/user');
 
 const router = Router();
 
@@ -390,6 +391,21 @@ router.post('/seed', async (req, res, next) => {
     }
 
     res.json({ data: { ok: true, message: `Seeded ${systems.length} systems, ${clients.length} clients, ${demos.length} demos` } });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /admin/fix-unknown-creators — reassign 'unknown' CREATEDBY to the calling user
+router.post('/fix-unknown-creators', async (req, res, next) => {
+  try {
+    const email = getUserEmail(req.user);
+    const result = await query(
+      `UPDATE SAP_PRESALES_DEMOS_DEMOS SET CREATEDBY = ?, MODIFIEDBY = ? WHERE CREATEDBY = 'unknown'`,
+      [email, email]
+    );
+    const fixed = result?.affectedRows ?? result?.rowCount ?? '?';
+    res.json({ ok: true, fixedTo: email, rows: fixed });
   } catch (err) {
     next(err);
   }
