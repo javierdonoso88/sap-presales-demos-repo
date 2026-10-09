@@ -46,7 +46,10 @@ sap-presales-demos-repo/
 │           ├── attachments.js # Upload/download/delete en S3
 │           ├── share.js       # Tokens de enlace público
 │           ├── dashboard.js   # KPIs y agregaciones
-│           └── admin.js       # Seed de datos inicial
+│           ├── admin.js       # Seed de datos inicial
+│           └── me.js          # Identidad del usuario autenticado
+│       └── utils/
+│           └── user.js        # getUserEmail — xssec / CDS User / JWT payload
 └── ui/
     ├── index.html
     ├── vite.config.js
@@ -172,6 +175,7 @@ Base path: `/api`
 | `POST` | `/demos/:id/share` | Generar token público (24h) |
 | `GET` | `/share/:token` | Vista pública sin autenticación |
 | `POST` | `/admin/seed` | Seed de datos de prueba |
+| `GET` | `/me` | Identidad del usuario autenticado (nombre, iniciales, logoutUrl) |
 
 ---
 
@@ -191,6 +195,7 @@ Base path: `/api`
   - *Comentarios* — Hilo de comentarios internos del equipo
 - **Share** — Enlace público de 24h sin autenticación para compartir una demo
 - **Clone** — Duplicar una demo existente como borrador
+- **Usuario autenticado** — Sidebar muestra nombre e iniciales del usuario XSUAA con menú de logout; todas las acciones (crear/editar demo, sistemas, clientes, comentarios) quedan registradas con el logon name del usuario real
 - **Completitud** — Barra de progreso (título + descripción + fecha + sistema + cliente = 100%)
 - **Tags** — Etiquetas libres con colores automáticos por hash
 - **Master Data** — CRUD de sistemas y clientes con estadísticas de uso
